@@ -14,8 +14,8 @@ Danach die angezeigte lokale Adresse im Browser öffnen. Auf dem Einstiegsbildsc
 
 ## Enthaltene Demo-Abläufe
 
-- Kunde: Heute-Ansicht, Wochenplan, geführtes Training, Timer, Ernährungs-Check-ins mit Mahlzeitenfoto, Chat, Termine, Videothek und Fortschritt
-- Trainer: Dashboard, Kundenliste, Kundenfortschritt, Plan-Builder, Zuweisung, Ernährung, Mediathek und Kundenvorschau
+- Kunde: Heute-Ansicht, Wochenplan, geführtes Training, Timer, Ernährungs-Check-ins mit Mahlzeitenfoto, Chat, sichtbare Terminbuchung, Video-Check-ins, Videothek und Fortschritt
+- Trainer: Dashboard, Kundenliste, Termin- und Call-Übersicht, Kundenfortschritt, Plan-Builder, Zuweisung, Ernährung, Mediathek und Kundenvorschau
 - Responsive Darstellung für Smartphone und Desktop
 
 Der Prototyp verwendet ausschließlich Demo-Daten und hat noch kein produktives Backend.

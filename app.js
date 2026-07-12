@@ -13,6 +13,7 @@ const state = {
   water: 4,
   habits: [true, false, false],
   mealPhoto: null,
+  appointment: { date: 'Dienstag, 14. Juli', time: '09:30', type: 'Persönlicher Video-Check-in', status: 'Bestätigt' },
   messages: [
     { mine: false, text: 'Guten Morgen Anna! Heute steht dein Power-Workout an. Achte bei den Kniebeugen auf einen stabilen Rumpf. 💪', time: '08:12' },
     { mine: true, text: 'Guten Morgen Sergio! Ich bin bereit. Das Knie fühlt sich heute auch gut an.', time: '08:18' },
@@ -31,7 +32,7 @@ const state = {
   ]
 };
 
-const icons = { today:'⌂', plan:'▦', nutrition:'◉', chat:'✦', more:'•••' };
+const icons = { today:'⌂', plan:'▦', nutrition:'◉', chat:'✦', appointments:'◷', more:'•••' };
 
 function toast(message) {
   const el = document.querySelector('#toast');
@@ -80,7 +81,7 @@ function mobileHeader(title='Heute') {
 }
 
 function bottomNav() {
-  const items = [['today','Heute'],['plan','Plan'],['nutrition','Ernährung'],['chat','Chat'],['more','Mehr']];
+  const items = [['today','Heute'],['plan','Plan'],['nutrition','Ernährung'],['chat','Chat'],['appointments','Termine']];
   return `<nav class="bottom-nav" aria-label="Hauptnavigation">${items.map(([key,label]) => `<button data-view="${key}" class="${state.clientView===key?'active':''}"><span>${icons[key]}</span>${label}</button>`).join('')}</nav>`;
 }
 
@@ -109,6 +110,15 @@ function clientToday() {
           </div>
         </article>
       </section>
+      ${state.appointment ? `<section class="personal-checkin" style="margin-top:28px">
+        <div class="row-between"><div><span class="eyebrow">Persönlich mit Sergio</span><h2 style="margin:4px 0">Dein nächster Check-in</h2></div><span class="tag green">Bestätigt</span></div>
+        <article class="card appointment-card">
+          <div class="calendar-date"><strong>14</strong><small>JUL</small></div>
+          <div class="appointment-copy"><strong>${state.appointment.type}</strong><span>${state.appointment.date} · ${state.appointment.time}</span><small class="muted">30 Min. · Video-Call</small></div>
+          <button class="btn btn-primary btn-small" data-call="Anna Weber">Call starten</button>
+        </article>
+        <button class="btn btn-ghost btn-small" data-view="appointments" style="width:100%;margin-top:10px">Termin ansehen oder ändern →</button>
+      </section>` : ''}
       <section style="margin-top:28px">
         <div class="row-between"><h2>Sergio sagt</h2><button class="btn btn-ghost btn-small" data-view="chat">Antworten</button></div>
         <div class="card card-pad row" style="align-items:flex-start"><div class="avatar" style="background:var(--gold);color:#222">SM</div><div><strong>„Konstanz schlägt Perfektion.“</strong><p class="muted" style="margin:5px 0 0">Achte heute auf einen stabilen Rumpf. Ich schaue mir deine Werte danach an.</p></div></div>
@@ -153,6 +163,15 @@ function clientChat() {
   </main><form class="chat-compose" id="chatForm"><button type="button" class="icon-btn" aria-label="Anhang">＋</button><input id="chatInput" aria-label="Nachricht" placeholder="Nachricht an Sergio …"><button class="icon-btn" aria-label="Senden">➤</button></form>${bottomNav()}`;
 }
 
+function clientAppointments() {
+  return `${mobileHeader('Termine')}<main class="mobile-main">
+    <section style="padding-top:26px"><span class="eyebrow">Persönliches Coaching</span><h1 style="font-size:2.6rem">Zeit für dich.<br><span class="gold">Direkt mit Sergio.</span></h1><p class="muted">Buche deinen Check-in, bespreche deinen Fortschritt und starte den Video-Call direkt aus der App.</p></section>
+    ${state.appointment ? `<section><div class="row-between"><h2>Nächster Check-in</h2><span class="tag green">${state.appointment.status}</span></div><article class="card featured-appointment"><div class="appointment-hero"><div class="avatar coach-avatar">SM</div><div><span class="eyebrow">Video-Call mit Sergio</span><h2 style="margin:4px 0">${state.appointment.date}</h2><strong class="gold">${state.appointment.time} Uhr · 30 Minuten</strong></div></div><div class="appointment-agenda"><strong>Dein Check-in</strong><p class="muted">Trainingsfortschritt, Ernährung und deine Ziele für die kommende Woche.</p></div><button class="btn btn-primary" style="width:100%" data-call="Anna Weber">▶ Video-Call starten</button><div class="grid-2" style="margin-top:10px"><button class="btn btn-ghost btn-small" data-modal="booking">Verschieben</button><button class="btn btn-ghost btn-small" id="cancelAppointment">Absagen</button></div></article></section>` : `<section class="card card-pad empty-appointment"><div class="meal-camera" style="margin:auto">◷</div><h2 style="margin:12px 0 6px">Noch kein Check-in geplant</h2><p class="muted">Finde einen Termin, der gut in deine Woche passt.</p><button class="btn btn-primary" data-modal="booking">Termin mit Sergio buchen</button></section>`}
+    <section style="margin-top:26px"><div class="row-between"><h2>Weitere Möglichkeiten</h2></div><div class="grid-2"><button class="quick-action" data-modal="booking"><strong>＋ Termin buchen</strong><span class="muted">Freie Zeiten ansehen</span></button><button class="quick-action" data-view="chat"><strong>✦ Sergio schreiben</strong><span class="muted">Kurze Frage stellen</span></button></div></section>
+    <section class="card card-pad" style="margin-top:20px"><span class="eyebrow">So funktioniert es</span><div class="habit-row"><span class="tag">1</span><span>Passenden Termin auswählen</span></div><div class="habit-row"><span class="tag">2</span><span>Erinnerung vor dem Termin erhalten</span></div><div class="habit-row"><span class="tag">3</span><span>Call direkt hier starten</span></div></section>
+  </main>${bottomNav()}`;
+}
+
 function clientMore() {
   return `${mobileHeader('Mehr')}<main class="mobile-main"><section class="card card-pad" style="margin-top:24px;text-align:center"><div class="avatar" style="width:76px;height:76px;margin:auto;font-size:1.3rem">AW</div><h2 style="margin:12px 0 0">Anna Weber</h2><span class="muted">Strong Start · seit 5 Wochen</span></section>
     <div class="grid-2" style="margin-top:18px"><button class="quick-action" data-modal="booking"><strong>📅 Termin buchen</strong><span class="muted">Persönlicher Check-in</span></button><button class="quick-action" data-modal="video"><strong>▶ Videothek</strong><span class="muted">Übungen & Wissen</span></button><button class="quick-action" data-modal="progress"><strong>↗ Fortschritt</strong><span class="muted">Werte & Fotos</span></button><button class="quick-action" data-modal="privacy"><strong>◇ Datenschutz</strong><span class="muted">Einwilligungen & Daten</span></button></div>
@@ -163,7 +182,7 @@ function clientMore() {
 function renderClient() {
   clearInterval(state.timerId);
   if (state.workoutOpen) return renderWorkout();
-  const views = {today:clientToday, plan:clientPlan, nutrition:clientNutrition, chat:clientChat, more:clientMore};
+  const views = {today:clientToday, plan:clientPlan, nutrition:clientNutrition, chat:clientChat, appointments:clientAppointments, more:clientMore};
   app.innerHTML = `<div class="phone-app">${views[state.clientView]()}</div>`;
   bindMobileNav();
   document.querySelector('#startWorkout')?.addEventListener('click', () => { state.workoutOpen=true; state.exerciseIndex=0; state.setsDone=[false,false,false]; renderWorkout(); });
@@ -188,6 +207,8 @@ function renderClient() {
   document.querySelectorAll('[data-habit]').forEach(input => input.onchange=()=>{ state.habits[Number(input.dataset.habit)]=input.checked; toast('Gewohnheit aktualisiert'); });
   document.querySelector('#chatForm')?.addEventListener('submit', e=>{ e.preventDefault(); const input=document.querySelector('#chatInput'); if(!input.value.trim()) return; state.messages.push({mine:true,text:input.value.trim(),time:'Jetzt'}); renderClient(); });
   document.querySelectorAll('[data-modal]').forEach(btn=>btn.onclick=()=>showModal(btn.dataset.modal));
+  document.querySelectorAll('[data-call]').forEach(btn=>btn.onclick=()=>showCallModal(btn.dataset.call));
+  document.querySelector('#cancelAppointment')?.addEventListener('click',()=>{ state.appointment=null; toast('Termin wurde abgesagt'); renderClient(); });
   document.querySelector('#logout')?.addEventListener('click',()=>{ state.loggedIn=false; login(); });
 }
 
@@ -234,22 +255,48 @@ function showModal(type) {
   document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between" style="align-items:flex-start"><div style="flex:1">${content[type]}</div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div></div></div>`);
   document.querySelector('.close-modal').onclick=()=>document.querySelector('.modal-backdrop').remove();
   document.querySelector('.modal-backdrop').onclick=e=>{if(e.target.classList.contains('modal-backdrop'))e.currentTarget.remove();};
-  document.querySelectorAll('.slot').forEach(btn=>btn.onclick=()=>{toast(`Termin vorgemerkt: ${btn.textContent}`);document.querySelector('.modal-backdrop').remove();});
+  document.querySelectorAll('.slot').forEach(btn=>btn.onclick=()=>{
+    const [date,time] = btn.textContent.split(' · ');
+    state.appointment = { date, time, type: 'Persönlicher Video-Check-in', status: 'Bestätigt' };
+    document.querySelector('.modal-backdrop').remove();
+    state.clientView='appointments';
+    renderClient();
+    toast(`Termin bestätigt: ${btn.textContent}`);
+  });
+}
+
+function showCallModal(clientName='Anna Weber') {
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop call-backdrop"><div class="modal call-modal"><div class="call-stage"><span class="tag green">Sichere Verbindung bereit</span><div class="call-avatar-wrap"><div class="pulse-ring"></div><div class="avatar call-avatar">${clientName==='Anna Weber'?'SM':'AW'}</div></div><span class="eyebrow">Persönlicher Check-in</span><h2>${clientName==='Anna Weber'?'Sergio Maestro':clientName}</h2><p class="muted">Video und Mikrofon werden erst beim echten Anbieter freigegeben.</p><div class="call-controls"><button class="icon-btn" aria-label="Mikrofon">◉</button><button class="icon-btn" aria-label="Kamera">▣</button><button class="icon-btn end-call" aria-label="Call beenden">×</button></div><button id="joinCall" class="btn btn-primary" style="width:100%;margin-top:22px">Jetzt dem Call beitreten</button></div></div></div>`);
+  document.querySelector('.end-call').onclick=()=>document.querySelector('.call-backdrop').remove();
+  document.querySelector('#joinCall').onclick=()=>{
+    document.querySelector('#joinCall').textContent='Verbindung wird aufgebaut …';
+    setTimeout(()=>{ toast('Demo: Der Video-Call würde jetzt starten'); document.querySelector('.call-backdrop')?.remove(); },900);
+  };
 }
 
 function adminShell(content,title,view=state.adminView) {
-  const nav=[['dashboard','⌂','Übersicht'],['clients','♙','Kunden'],['plans','▦','Pläne'],['nutrition','◉','Ernährung'],['media','▶','Mediathek'],['chat','✦','Nachrichten']];
+  const nav=[['dashboard','⌂','Übersicht'],['clients','♙','Kunden'],['appointments','◷','Termine'],['plans','▦','Pläne'],['nutrition','◉','Ernährung'],['media','▶','Mediathek'],['chat','✦','Nachrichten']];
   return `<div class="admin-app"><aside class="sidebar">${brand()}<nav>${nav.map(n=>`<button data-admin="${n[0]}" class="${view===n[0]?'active':''}"><span>${n[1]}</span><b>${n[2]}</b></button>`).join('')}</nav><div class="sidebar-bottom"><div class="row"><div class="avatar" style="background:var(--gold);color:#222">SM</div><div class="user-copy"><strong>Sergio Maestro</strong><small class="muted" style="display:block">Personal Trainer</small></div></div></div></aside><div class="admin-main"><header class="admin-header"><div><small class="muted">Maestro Plan</small><strong class="display" style="display:block">${title}</strong></div><div class="row"><button class="btn btn-dark btn-small" data-preview>↗ Kundenvorschau</button><button id="logout" class="icon-btn" style="color:#333;border-color:#ccc" aria-label="Abmelden">⎋</button></div></header><main class="admin-content">${content}</main></div></div>`;
 }
 
 function adminDashboard() {
   return adminShell(`<div class="row-between"><div><span class="eyebrow">Montag, 12. Juli</span><h1 style="font-size:2.8rem;margin:4px 0">Guten Morgen, Sergio.</h1><p style="color:#666">Vier Kunden brauchen heute deine Aufmerksamkeit.</p></div><button class="btn btn-primary" data-admin="plans">＋ Plan erstellen</button></div>
-  <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>7</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><span class="muted">Nächster: 11:30</span></div></section>
+  <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>7</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><button class="btn btn-ghost btn-small" data-admin="appointments">Nächster: 11:30 →</button></div></section>
   <section class="grid-2"><div class="card card-pad"><div class="row-between"><div><span class="eyebrow">Handlungsbedarf</span><h2>Heute wichtig</h2></div><span class="tag">4 Aufgaben</span></div><div class="stack"><div class="row-between"><div><strong>Jonas · Check-in prüfen</strong><small class="muted" style="display:block">Seit 2 Tagen offen</small></div><button class="btn btn-ghost btn-small">Öffnen</button></div><div class="divider"></div><div class="row-between"><div><strong>Daniel · Training verpasst</strong><small class="muted" style="display:block">Motivationsnachricht senden</small></div><button class="btn btn-ghost btn-small">Chat</button></div><div class="divider"></div><div class="row-between"><div><strong>Anna · Plan läuft aus</strong><small class="muted" style="display:block">Neuen Block vorbereiten</small></div><button class="btn btn-ghost btn-small">Plan</button></div></div></div><div class="card card-pad"><span class="eyebrow">Team-Aktivität</span><h2>Trainingsquote</h2><div class="chart">${[58,68,76,70,82,86,82].map((v,i)=>`<div class="bar ${i===6?'goldbar':''}" style="height:${v}%"><small style="position:absolute;bottom:-22px;color:var(--muted)">${['M','D','M','D','F','S','S'][i]}</small></div>`).join('')}</div></div></section>`, 'Übersicht','dashboard');
 }
 
 function adminClients() {
   return adminShell(`<div class="row-between"><div><span class="eyebrow">Coaching</span><h1 style="font-size:2.8rem">Meine Kunden</h1></div><button class="btn btn-primary" id="invite">＋ Kunde einladen</button></div><div class="card card-pad"><div class="row-between" style="margin-bottom:12px"><input aria-label="Kunden suchen" placeholder="Kunden suchen …" style="padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:#202224;color:#fff;min-width:260px"><span class="muted">24 aktive Kunden</span></div><table class="client-table"><thead><tr><th>Kunde</th><th>Status</th><th>Plan</th><th>Quote</th><th>Letzte Aktivität</th></tr></thead><tbody>${state.clients.map((c,i)=>`<tr class="client-row" data-client="${i}"><td><div class="row"><div class="avatar">${c.initials}</div><strong>${c.name}</strong></div></td><td><span class="status-dot ${c.alert?'warn':''}"></span>${c.status}</td><td>${c.plan}</td><td><strong class="${c.adherence>80?'lime':'gold'}">${c.adherence}%</strong></td><td class="muted">${c.last}</td></tr>`).join('')}</tbody></table></div>`, 'Kunden','clients');
+}
+
+function adminAppointments() {
+  const appointments=[
+    {time:'09:30',name:'Anna Weber',initials:'AW',topic:'Wochen-Check-in',status:'Bereit',live:true},
+    {time:'11:30',name:'Jonas Klein',initials:'JK',topic:'Trainingsplanung',status:'In 2 Std.',live:false},
+    {time:'15:00',name:'Miriam Roth',initials:'MR',topic:'Fortschrittsgespräch',status:'Heute',live:false},
+    {time:'17:30',name:'Daniel Vogt',initials:'DV',topic:'Motivations-Check-in',status:'Heute',live:false}
+  ];
+  return adminShell(`<div class="row-between"><div><span class="eyebrow">Persönliche Betreuung</span><h1 style="font-size:2.8rem">Termine & Video-Calls</h1><p style="color:#666">Alle persönlichen Check-ins an einem Ort.</p></div><button class="btn btn-primary" id="newAppointment">＋ Termin anlegen</button></div><div class="grid-3" style="margin:24px 0"><div class="card metric-card"><span class="muted">Heute</span><strong>4</strong><span class="lime">Alle bestätigt</span></div><div class="card metric-card"><span class="muted">Diese Woche</span><strong>17</strong><span class="gold">8 Video · 9 vor Ort</span></div><div class="card metric-card"><span class="muted">Nächster Call</span><strong>09:30</strong><span class="muted">Anna Weber</span></div></div><section class="card card-pad"><div class="row-between"><div><span class="eyebrow">Montag, 12. Juli</span><h2>Heutige Check-ins</h2></div><span class="tag green">4 bestätigt</span></div><div class="appointment-list">${appointments.map(a=>`<article class="admin-appointment ${a.live?'is-live':''}"><div class="appointment-time"><strong>${a.time}</strong><small>30 Min.</small></div><div class="avatar">${a.initials}</div><div class="appointment-copy"><strong>${a.name}</strong><span>${a.topic} · Video</span><small class="muted">${a.status}</small></div><div class="row"><button class="btn ${a.live?'btn-primary':'btn-dark'} btn-small" data-call="${a.name}">${a.live?'▶ Call starten':'Call öffnen'}</button><button class="icon-btn appointment-menu" aria-label="Terminoptionen">•••</button></div></article>`).join('')}</div></section>`, 'Termine & Calls','appointments');
 }
 
 function adminPlans() {
@@ -265,12 +312,14 @@ function adminGeneric(view) {
 }
 
 function renderAdmin() {
-  const views={dashboard:adminDashboard,clients:adminClients,plans:adminPlans,nutrition:()=>adminGeneric('nutrition'),media:()=>adminGeneric('media'),chat:()=>adminGeneric('chat')};
+  const views={dashboard:adminDashboard,clients:adminClients,appointments:adminAppointments,plans:adminPlans,nutrition:()=>adminGeneric('nutrition'),media:()=>adminGeneric('media'),chat:()=>adminGeneric('chat')};
   app.innerHTML=views[state.adminView]();
   document.querySelectorAll('[data-admin]').forEach(btn=>btn.onclick=()=>{state.adminView=btn.dataset.admin;renderAdmin();});
   document.querySelectorAll('[data-preview]').forEach(btn=>btn.onclick=()=>{state.role='client';state.clientView='today';renderClient();toast('Kundenvorschau geöffnet');});
+  document.querySelectorAll('[data-call]').forEach(btn=>btn.onclick=()=>showCallModal(btn.dataset.call));
   document.querySelector('#logout')?.addEventListener('click',()=>{state.loggedIn=false;login();});
   document.querySelector('#invite')?.addEventListener('click',()=>showAdminModal('Kundin einladen','Ein sicherer Einladungslink wird per E-Mail versendet. Es gibt keine offene Registrierung.'));
+  document.querySelector('#newAppointment')?.addEventListener('click',()=>showAdminModal('Neuen Check-in planen','Wähle einen Kunden und sende anschließend eine persönliche Termineinladung.'));
   document.querySelectorAll('[data-client]').forEach(row=>row.onclick=()=>showClientDetail(state.clients[Number(row.dataset.client)]));
   document.querySelector('#saveDraft')?.addEventListener('click',()=>toast('Entwurf als Version 3 gespeichert'));
   document.querySelector('#assignPlan')?.addEventListener('click',()=>toast('Full Body Power wurde Anna zugewiesen'));
