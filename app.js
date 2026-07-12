@@ -12,6 +12,7 @@ const state = {
   timerId: null,
   water: 4,
   habits: [true, false, false],
+  mealPhoto: null,
   messages: [
     { mine: false, text: 'Guten Morgen Anna! Heute steht dein Power-Workout an. Achte bei den Kniebeugen auf einen stabilen Rumpf. 💪', time: '08:12' },
     { mine: true, text: 'Guten Morgen Sergio! Ich bin bereit. Das Knie fühlt sich heute auch gut an.', time: '08:18' },
@@ -134,6 +135,11 @@ function clientNutrition() {
   return `${mobileHeader('Ernährung')}<main class="mobile-main">
     <section style="padding-top:26px"><span class="eyebrow">Montag · Tagesplan</span><h1 style="font-size:2.6rem">Gut versorgt.<br><span class="gold">Stark im Training.</span></h1></section>
     <div class="stack">${meals.map((m,i)=>`<article class="meal-card"><div class="meal-icon">${m[0]}</div><div><strong>${m[1]}</strong><small class="muted" style="display:block">${m[2]}</small></div><button class="check ${i<2?'checked':''}" data-meal>${i<2?'✓':'○'}</button></article>`).join('')}</div>
+    <section class="card card-pad meal-photo-card" style="margin-top:20px">
+      <div class="row-between"><div><span class="eyebrow">Foto-Check-in</span><h2 style="margin:4px 0">Mahlzeit zeigen</h2></div><span class="meal-camera">▣</span></div>
+      <p class="muted">Fotografiere deine Mahlzeit oder wähle ein Bild aus der Galerie. Sergio kann dir dazu persönliches Feedback geben.</p>
+      ${state.mealPhoto ? `<div class="meal-photo-preview"><img src="${state.mealPhoto.previewUrl}" alt="Vorschau der ausgewählten Mahlzeit"><div class="meal-photo-overlay"><span class="tag green">Bereit zum Senden</span><button id="removeMealPhoto" class="icon-btn" aria-label="Mahlzeitenfoto entfernen">×</button></div></div><div class="form-field meal-note"><label for="mealPhotoNote">Notiz für Sergio</label><textarea id="mealPhotoNote" rows="2" placeholder="Was möchtest du Sergio dazu sagen?">${state.mealPhoto.note}</textarea></div><button id="saveMealPhoto" class="btn btn-primary" style="width:100%">Foto-Check-in speichern</button>` : `<input id="mealPhotoInput" class="visually-hidden" type="file" accept="image/*" capture="environment"><label for="mealPhotoInput" class="meal-photo-upload"><span class="meal-photo-plus">＋</span><strong>Foto aufnehmen oder auswählen</strong><small>Kamera und Galerie werden unterstützt</small></label>`}
+    </section>
     <section class="card card-pad" style="margin-top:20px"><div class="row-between"><div><span class="eyebrow">Wasser</span><h2 style="margin:4px 0">${state.water} von 8 Gläsern</h2></div><span style="font-size:2rem">💧</span></div><div class="water">${Array.from({length:8},(_,i)=>`<button data-water="${i+1}" class="${i<state.water?'filled':''}" aria-label="${i+1} Gläser">${i<state.water?'✓':'+'}</button>`).join('')}</div></section>
     <section class="card card-pad" style="margin-top:20px"><span class="eyebrow">Deine Gewohnheiten</span><h2 style="margin:4px 0 10px">Heute im Fokus</h2>${['2 Portionen Gemüse','Keine Softdrinks','Langsam & bewusst essen'].map((h,i)=>`<label class="habit-row"><input type="checkbox" data-habit="${i}" ${state.habits[i]?'checked':''}><span>${h}</span></label>`).join('')}</section>
     <p class="muted" style="font-size:.8rem;margin:20px 4px">Hinweis: Dieser Plan dient dem allgemeinen Ernährungscoaching und ersetzt keine medizinische Beratung.</p>
@@ -162,6 +168,22 @@ function renderClient() {
   bindMobileNav();
   document.querySelector('#startWorkout')?.addEventListener('click', () => { state.workoutOpen=true; state.exerciseIndex=0; state.setsDone=[false,false,false]; renderWorkout(); });
   document.querySelectorAll('[data-meal]').forEach(btn => btn.onclick=()=>{ btn.classList.toggle('checked'); btn.textContent=btn.classList.contains('checked')?'✓':'○'; toast('Check-in gespeichert'); });
+  document.querySelector('#mealPhotoInput')?.addEventListener('change', event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Bitte wähle eine Bilddatei aus'); return; }
+    state.mealPhoto = { previewUrl: URL.createObjectURL(file), name: file.name, note: '', meal: 'Tages-Check-in', capturedAt: new Date().toISOString() };
+    renderClient();
+  });
+  document.querySelector('#mealPhotoNote')?.addEventListener('input', event => { if (state.mealPhoto) state.mealPhoto.note = event.target.value; });
+  document.querySelector('#removeMealPhoto')?.addEventListener('click', () => {
+    if (state.mealPhoto?.previewUrl) URL.revokeObjectURL(state.mealPhoto.previewUrl);
+    state.mealPhoto = null;
+    renderClient();
+  });
+  document.querySelector('#saveMealPhoto')?.addEventListener('click', () => {
+    toast('Foto-Check-in gespeichert · Sergio wird informiert');
+  });
   document.querySelectorAll('[data-water]').forEach(btn => btn.onclick=()=>{ state.water=Number(btn.dataset.water); renderClient(); });
   document.querySelectorAll('[data-habit]').forEach(input => input.onchange=()=>{ state.habits[Number(input.dataset.habit)]=input.checked; toast('Gewohnheit aktualisiert'); });
   document.querySelector('#chatForm')?.addEventListener('submit', e=>{ e.preventDefault(); const input=document.querySelector('#chatInput'); if(!input.value.trim()) return; state.messages.push({mine:true,text:input.value.trim(),time:'Jetzt'}); renderClient(); });

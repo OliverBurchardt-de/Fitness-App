@@ -144,6 +144,16 @@ p { line-height: 1.55; }
 
 .meal-card { padding:18px; display:grid; grid-template-columns:56px 1fr auto; align-items:center; gap:12px; background:var(--charcoal); border:1px solid var(--line); border-radius:18px; }
 .meal-icon { width:54px; height:54px; border-radius:16px; display:grid; place-items:center; font-size:1.5rem; background:rgba(189,155,83,.15); }
+.meal-camera { width:48px; height:48px; display:grid; place-items:center; border-radius:15px; color:var(--gold-light); background:rgba(189,155,83,.15); font-size:1.35rem; }
+.meal-photo-upload { min-height:150px; padding:22px; display:grid; place-items:center; align-content:center; gap:4px; text-align:center; border:1px dashed rgba(189,155,83,.55); border-radius:18px; background:rgba(189,155,83,.06); cursor:pointer; transition:background .2s ease, border-color .2s ease; }
+.meal-photo-upload:hover { background:rgba(189,155,83,.12); border-color:var(--gold-light); }
+.meal-photo-upload small { color:var(--muted); }
+.meal-photo-plus { width:44px; height:44px; display:grid; place-items:center; margin-bottom:6px; border-radius:50%; color:#171717; background:var(--lime); font-size:1.5rem; font-weight:700; }
+.meal-photo-preview { position:relative; height:240px; overflow:hidden; border-radius:18px; background:#191a1b; }
+.meal-photo-preview img { width:100%; height:100%; object-fit:cover; }
+.meal-photo-overlay { position:absolute; inset:0; padding:12px; display:flex; align-items:flex-start; justify-content:space-between; background:linear-gradient(180deg,rgba(0,0,0,.48),transparent 45%); }
+.meal-note textarea { color:var(--white); border-color:var(--line); background:#202224; }
+.visually-hidden { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
 .habit-row { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); }
 .habit-row input { width:22px; height:22px; accent-color:var(--lime); }
 .water { display:grid; grid-template-columns:repeat(8,1fr); gap:6px; }
