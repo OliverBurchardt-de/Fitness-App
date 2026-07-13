@@ -71,6 +71,37 @@ function toast(message) {
   setTimeout(() => el.classList.remove('show'), 2600);
 }
 
+// Barrierefreie Modale: Rolle/aria setzen, Fokus fangen, Escape schließt,
+// Fokus kehrt nach dem Schließen zum auslösenden Element zurück.
+function enhanceModal(backdrop) {
+  if (!backdrop) return;
+  const previouslyFocused = document.activeElement;
+  const dialog = backdrop.querySelector('.modal') || backdrop;
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  const focusables = () => Array.from(backdrop.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )).filter(el => el.offsetParent !== null || el === document.activeElement);
+  const first = focusables()[0];
+  if (first) { first.focus(); } else { dialog.tabIndex = -1; dialog.focus(); }
+  backdrop.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { backdrop.remove(); return; }
+    if (e.key !== 'Tab') return;
+    const items = focusables();
+    if (!items.length) return;
+    const firstEl = items[0], lastEl = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === firstEl) { e.preventDefault(); lastEl.focus(); }
+    else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); firstEl.focus(); }
+  });
+  const observer = new MutationObserver(() => {
+    if (!document.body.contains(backdrop)) {
+      observer.disconnect();
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    }
+  });
+  observer.observe(document.body, { childList: true });
+}
+
 function brand(compact = false) {
   return `<div class="brand"><img class="brand-logo" src="assets/maestro-logo.png" alt="The Maestro Plan">${compact ? '' : '<div class="brand-copy"><strong>Maestro Plan</strong><small>Inspiring your health</small></div>'}</div>`;
 }
@@ -317,6 +348,7 @@ function showModal(type) {
     privacy:`<span class="eyebrow">Deine Daten</span><h2>Privatsphäre & Kontrolle</h2><div class="stack"><button class="quick-action"><strong>Einwilligungen verwalten</strong><span class="muted">2 aktive Einwilligungen</span></button><button class="quick-action"><strong>Datenexport anfordern</strong><span class="muted">Maschinenlesbare Kopie</span></button><button class="quick-action"><strong>Konto löschen</strong><span class="muted">Kontrollierter Löschprozess</span></button></div>`
   };
   document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between" style="align-items:flex-start"><div style="flex:1">${content[type]}</div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div></div></div>`);
+  enhanceModal(document.body.lastElementChild);
   document.querySelector('.close-modal').onclick=()=>document.querySelector('.modal-backdrop').remove();
   document.querySelector('.modal-backdrop').onclick=e=>{if(e.target.classList.contains('modal-backdrop'))e.currentTarget.remove();};
   document.querySelectorAll('.slot').forEach(btn=>btn.onclick=()=>{
@@ -331,6 +363,7 @@ function showModal(type) {
 
 function showCallModal(clientName='Anna Weber') {
   document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop call-backdrop"><div class="modal call-modal"><div class="call-stage"><span class="tag green">Sichere Verbindung bereit</span><div class="call-avatar-wrap"><div class="pulse-ring"></div><div class="avatar call-avatar">${clientName==='Anna Weber'?'SM':'AW'}</div></div><span class="eyebrow">Persönlicher Check-in</span><h2>${clientName==='Anna Weber'?'Sergio Maestro':clientName}</h2><p class="muted">Video und Mikrofon werden erst beim echten Anbieter freigegeben.</p><div class="call-controls"><button class="icon-btn" aria-label="Mikrofon">◉</button><button class="icon-btn" aria-label="Kamera">▣</button><button class="icon-btn end-call" aria-label="Call beenden">×</button></div><button id="joinCall" class="btn btn-primary" style="width:100%;margin-top:22px">Jetzt dem Call beitreten</button></div></div></div>`);
+  enhanceModal(document.body.lastElementChild);
   document.querySelector('.end-call').onclick=()=>document.querySelector('.call-backdrop').remove();
   document.querySelector('#joinCall').onclick=()=>{
     document.querySelector('#joinCall').textContent='Verbindung wird aufgebaut …';
@@ -402,12 +435,14 @@ function renderAdmin() {
 }
 
 function showClientDetail(c) {
-  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between"><div class="row"><div class="avatar">${c.initials}</div><div><h2 style="margin:0">${c.name}</h2><span class="muted">${c.plan}</span></div></div><button class="icon-btn close-modal">×</button></div><div class="grid-3" style="margin:24px 0"><div><strong class="gold">${c.adherence}%</strong><small class="muted" style="display:block">Trainingsquote</small></div><div><strong class="gold">8</strong><small class="muted" style="display:block">Einheiten</small></div><div><strong class="gold">+12%</strong><small class="muted" style="display:block">Leistung</small></div></div><div class="chart">${[40,48,52,60,58,68,76,c.adherence].map(v=>`<div class="bar" style="height:${v}%"></div>`).join('')}</div><div class="grid-3" style="margin-top:30px"><button class="btn btn-dark">Plan anpassen</button><button class="btn btn-dark">Nachricht</button><button class="btn btn-primary">Termin</button></div></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between"><div class="row"><div class="avatar">${c.initials}</div><div><h2 style="margin:0">${c.name}</h2><span class="muted">${c.plan}</span></div></div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div><div class="grid-3" style="margin:24px 0"><div><strong class="gold">${c.adherence}%</strong><small class="muted" style="display:block">Trainingsquote</small></div><div><strong class="gold">8</strong><small class="muted" style="display:block">Einheiten</small></div><div><strong class="gold">+12%</strong><small class="muted" style="display:block">Leistung</small></div></div><div class="chart">${[40,48,52,60,58,68,76,c.adherence].map(v=>`<div class="bar" style="height:${v}%"></div>`).join('')}</div><div class="grid-3" style="margin-top:30px"><button class="btn btn-dark">Plan anpassen</button><button class="btn btn-dark">Nachricht</button><button class="btn btn-primary">Termin</button></div></div></div>`);
+  enhanceModal(document.body.lastElementChild);
   document.querySelector('.close-modal').onclick=()=>document.querySelector('.modal-backdrop').remove();
 }
 
 function showAdminModal(title,text){
-  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between"><div><span class="eyebrow">Maestro Plan</span><h2>${title}</h2></div><button class="icon-btn close-modal">×</button></div><p class="muted">${text}</p><div class="form-field"><label>E-Mail-Adresse</label><input placeholder="kunde@beispiel.de"></div><button class="btn btn-primary" style="width:100%" id="sendInvite">Einladung vorbereiten</button></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between"><div><span class="eyebrow">Maestro Plan</span><h2>${title}</h2></div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div><p class="muted">${text}</p><div class="form-field"><label>E-Mail-Adresse</label><input placeholder="kunde@beispiel.de"></div><button class="btn btn-primary" style="width:100%" id="sendInvite">Einladung vorbereiten</button></div></div>`);
+  enhanceModal(document.body.lastElementChild);
   document.querySelector('.close-modal').onclick=()=>document.querySelector('.modal-backdrop').remove();
   document.querySelector('#sendInvite').onclick=()=>{document.querySelector('.modal-backdrop').remove();toast('Einladung wurde vorbereitet');};
 }

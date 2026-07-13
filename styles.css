@@ -263,5 +263,12 @@ p { line-height: 1.55; }
   .admin-appointment > .row { grid-column:2 / -1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; }
+  *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; animation:none !important; }
 }
+
+/* Skip-Link für Tastatur- und Screenreader-Navigation */
+.skip-link { position:absolute; left:12px; top:-60px; z-index:300; padding:10px 16px; border-radius:10px; background:var(--lime); color:#171717; font-weight:700; text-decoration:none; transition:top .18s ease; }
+.skip-link:focus { top:12px; }
+
+/* Live-Feed neuer Check-ins im Trainer-Dashboard */
+.live-feed { border-left:3px solid var(--lime); }
