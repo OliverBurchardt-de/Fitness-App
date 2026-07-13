@@ -62,6 +62,60 @@ function resetState() {
   try { localStorage.removeItem(STORAGE_KEY); } catch (err) { /* egal */ }
 }
 
+// --- Connected Mode (Server-Anbindung) ------------------------------------
+// Wird ein Server auf gleichem Origin erreicht, laufen Login und geteilte
+// Daten über die REST-API. Ohne Server bleibt alles im lokalen Demo-Modus.
+const API = (typeof window !== 'undefined' && window.MaestroAPI) || { connected: false, token: null };
+let pollTimer = null;
+
+// Server-Zustand in die lokale state-Struktur übersetzen.
+function applyServerState(s) {
+  if (!s) return;
+  if (s.user && s.user.role) state.role = s.user.role;
+  state.loggedIn = true;
+  if (Array.isArray(s.messages)) state.messages = s.messages.map(m => ({ mine: !!m.mine, from: m.from, text: m.text, time: m.time }));
+  if (Array.isArray(s.checkins)) state.checkins = s.checkins.map(c => ({ type: c.type, client: c.client, label: c.label, note: c.note, time: c.time }));
+  if (s.progress) state.progress = s.progress;
+  state.appointment = s.appointment || null;
+  if (Array.isArray(s.clients)) state.clients = s.clients;
+}
+
+async function syncState(promise) {
+  try { applyServerState(await promise); }
+  catch (err) {
+    if (err && err.status === 401) { API.connected = false; toast('Sitzung abgelaufen – bitte neu anmelden'); }
+    else { toast((err && err.message) || 'Synchronisierung fehlgeschlagen'); }
+  }
+}
+
+async function doLogout() {
+  clearInterval(pollTimer);
+  if (API.connected) { try { await API.logout(); } catch (err) { /* trotzdem lokal abmelden */ } }
+  state.loggedIn = false;
+  saveState();
+  login();
+}
+
+// Sanftes Live-Polling: hält Chat, Check-ins und Termine zwischen Kunde und
+// Trainer aktuell, ohne Tipp-Eingaben oder offene Dialoge zu stören.
+function startPolling() {
+  clearInterval(pollTimer);
+  if (!API.connected) return;
+  pollTimer = setInterval(async () => {
+    if (!API.connected || !state.loggedIn || state.workoutOpen) return;
+    if (document.querySelector('.modal-backdrop')) return;
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+    try {
+      const s = await API.getState();
+      const before = JSON.stringify([state.messages, state.checkins, state.progress, state.appointment]);
+      applyServerState(s);
+      const after = JSON.stringify([state.messages, state.checkins, state.progress, state.appointment]);
+      if (before !== after) { state.role === 'client' ? renderClient() : renderAdmin(); }
+    } catch (err) { if (err && err.status === 401) API.connected = false; }
+  }, 4000);
+}
+
 const icons = { today:'⌂', plan:'▦', nutrition:'◉', chat:'✦', appointments:'◷', more:'•••' };
 
 function toast(message) {
@@ -69,6 +123,13 @@ function toast(message) {
   el.textContent = message;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// Nutzereingaben werden vor dem Einfügen in innerHTML maskiert (XSS-Schutz).
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
 }
 
 // Barrierefreie Modale: Rolle/aria setzen, Fokus fangen, Escape schließt,
@@ -134,7 +195,25 @@ function login() {
       </section>
     </main>`;
   document.querySelectorAll('[data-role]').forEach(btn => btn.onclick = () => { state.role = btn.dataset.role; login(); });
-  document.querySelector('#loginButton').onclick = () => { state.loggedIn = true; render(); };
+  document.querySelector('#loginButton').onclick = async () => {
+    if (API.connected) {
+      const btn = document.querySelector('#loginButton');
+      const email = document.querySelector('#email').value.trim();
+      const password = document.querySelector('#password').value;
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Anmelden …';
+      try {
+        applyServerState(await API.login(email, password));
+        render();
+        startPolling();
+      } catch (err) {
+        toast((err && err.message) || 'Anmeldung fehlgeschlagen');
+        btn.disabled = false; btn.textContent = label;
+      }
+      return;
+    }
+    state.loggedIn = true; render();
+  };
   saveState();
 }
 
@@ -223,7 +302,7 @@ function clientNutrition() {
 function clientChat() {
   return `${mobileHeader('Chat mit Sergio')}<main class="mobile-main" style="padding-top:22px">
     <div class="row" style="margin-bottom:24px"><div class="avatar" style="background:var(--gold);color:#222">SM</div><div><strong>Sergio Maestro</strong><small class="muted" style="display:block"><span class="status-dot"></span>Antwortet meist innerhalb 1 Std.</small></div></div>
-    <div class="chat-list">${state.messages.map(m=>`<div class="message ${m.mine?'mine':''}">${m.text}<small>${m.time}</small></div>`).join('')}</div>
+    <div class="chat-list">${state.messages.map(m=>`<div class="message ${m.mine?'mine':''}">${escapeHtml(m.text)}<small>${escapeHtml(m.time)}</small></div>`).join('')}</div>
   </main><form class="chat-compose" id="chatForm"><button type="button" class="icon-btn" aria-label="Anhang">＋</button><input id="chatInput" aria-label="Nachricht" placeholder="Nachricht an Sergio …"><button class="icon-btn" aria-label="Senden">➤</button></form>${bottomNav()}`;
 }
 
@@ -265,10 +344,16 @@ function renderClient() {
     state.mealPhoto = null;
     renderClient();
   });
-  document.querySelector('#saveMealPhoto')?.addEventListener('click', () => {
+  document.querySelector('#saveMealPhoto')?.addEventListener('click', async () => {
     const note = state.mealPhoto?.note?.trim() || '';
-    state.messages.push({ mine:true, text: note ? `📷 Mahlzeiten-Check-in gesendet. ${note}` : '📷 Mahlzeiten-Check-in gesendet.', time:'Jetzt' });
-    state.checkins.unshift({ type:'meal', client:'Anna Weber', label:'Mahlzeiten-Foto zur Bewertung', note, time:'Gerade eben' });
+    const text = note ? `📷 Mahlzeiten-Check-in gesendet. ${note}` : '📷 Mahlzeiten-Check-in gesendet.';
+    if (API.connected) {
+      await syncState(API.postCheckin({ type:'meal', label:'Mahlzeiten-Foto zur Bewertung', note }));
+      await syncState(API.postMessage(text));
+    } else {
+      state.messages.push({ mine:true, from:'anna', text, time:'Jetzt' });
+      state.checkins.unshift({ type:'meal', client:'Anna Weber', label:'Mahlzeiten-Foto zur Bewertung', note, time:'Gerade eben' });
+    }
     if (state.mealPhoto?.previewUrl) URL.revokeObjectURL(state.mealPhoto.previewUrl);
     state.mealPhoto = null;
     toast('Foto-Check-in gesendet · Sergio wird informiert');
@@ -276,11 +361,20 @@ function renderClient() {
   });
   document.querySelectorAll('[data-water]').forEach(btn => btn.onclick=()=>{ state.water=Number(btn.dataset.water); renderClient(); });
   document.querySelectorAll('[data-habit]').forEach(input => input.onchange=()=>{ state.habits[Number(input.dataset.habit)]=input.checked; toast('Gewohnheit aktualisiert'); });
-  document.querySelector('#chatForm')?.addEventListener('submit', e=>{ e.preventDefault(); const input=document.querySelector('#chatInput'); if(!input.value.trim()) return; state.messages.push({mine:true,text:input.value.trim(),time:'Jetzt'}); renderClient(); });
+  document.querySelector('#chatForm')?.addEventListener('submit', e=>{
+    e.preventDefault();
+    const input=document.querySelector('#chatInput');
+    const text=input.value.trim();
+    if(!text) return;
+    state.messages.push({mine:true, from:'anna', text, time:'Jetzt'});
+    input.value='';
+    renderClient();
+    if (API.connected) syncState(API.postMessage(text)).then(()=>renderClient());
+  });
   document.querySelectorAll('[data-modal]').forEach(btn=>btn.onclick=()=>showModal(btn.dataset.modal));
   document.querySelectorAll('[data-call]').forEach(btn=>btn.onclick=()=>showCallModal(btn.dataset.call));
-  document.querySelector('#cancelAppointment')?.addEventListener('click',()=>{ state.appointment=null; toast('Termin wurde abgesagt'); renderClient(); });
-  document.querySelector('#logout')?.addEventListener('click',()=>{ state.loggedIn=false; login(); });
+  document.querySelector('#cancelAppointment')?.addEventListener('click',()=>{ state.appointment=null; toast('Termin wurde abgesagt'); renderClient(); if (API.connected) API.deleteAppointment().catch(()=>{}); });
+  document.querySelector('#logout')?.addEventListener('click',()=>{ doLogout(); });
 }
 
 function renderWorkout() {
@@ -317,28 +411,40 @@ function showWorkoutComplete() {
   const exerciseCount = state.exercises.length;
   const setCount = exerciseCount * 3;
   app.innerHTML=`<div class="phone-app"><main class="mobile-main" style="min-height:100vh;display:grid;place-items:center;text-align:center"><div><div style="font-size:5rem">⚡</div><span class="eyebrow">Training abgeschlossen</span><h1>Stark,<br><span class="gold">Anna!</span></h1><p class="muted">Du hast heute ${exerciseCount} Übungen und ${setCount} Sätze absolviert.</p><div class="stats-row" style="margin:24px 0"><div class="stat"><strong>31:24</strong><small>Zeit</small></div><div class="stat"><strong>${setCount}</strong><small>Sätze</small></div><div class="stat"><strong>7/10</strong><small>Intensität</small></div></div><div class="form-field" style="text-align:left"><label for="feedback">Notiz an Sergio</label><textarea id="feedback" rows="3" placeholder="Wie lief dein Training?"></textarea></div><button id="finishWorkout" class="btn btn-primary" style="width:100%">Ergebnis speichern</button></div></main></div>`;
-  document.querySelector('#finishWorkout').onclick=()=>{
-    completeWorkout(document.querySelector('#feedback')?.value.trim() || '');
+  document.querySelector('#finishWorkout').onclick=async ()=>{
+    const note = document.querySelector('#feedback')?.value.trim() || '';
+    const summary = `Training „Full Body Power" abgeschlossen · ${state.exercises.length} Übungen`;
+    if (API.connected) {
+      // Zielfortschritt vorab berechnen – unabhängig davon, dass zwischenzeitliche
+      // Server-Antworten den lokalen state.progress überschreiben.
+      const nextProgress = nextWorkoutProgress(state.progress);
+      await syncState(API.postCheckin({ type:'workout', label:summary, note }));
+      await syncState(API.patchProgress(nextProgress));
+      await syncState(API.postMessage(note ? `${summary}. ${note}` : summary));
+    } else {
+      applyWorkoutProgress();
+      state.messages.push({ mine:true, from:'anna', text: note ? `${summary}. ${note}` : summary, time:'Jetzt' });
+      state.checkins.unshift({ type:'workout', client:'Anna Weber', label:summary, note, time:'Gerade eben' });
+      const anna = state.clients.find(c => c.name === 'Anna Weber');
+      if (anna) { anna.adherence = state.progress.adherence; anna.last = 'Gerade eben'; }
+    }
     state.clientView='today';
     toast('Training gespeichert · Sergio wurde informiert');
     renderClient();
   };
 }
 
-// Ein abgeschlossenes Training wirkt sich real auf Fortschritt, Chat und die
-// Trainer-Ansicht aus – der Kern eines geschlossenen Coaching-Loops.
-function completeWorkout(note) {
-  const p = state.progress;
-  p.sessionsDone = Math.min(p.sessionsGoal, p.sessionsDone + 1);
-  p.totalSessions += 1;
-  p.adherence = Math.min(100, p.adherence + 2);
-  p.performance += 1;
-  const summary = `Training „Full Body Power" abgeschlossen · ${state.exercises.length} Übungen`;
-  state.messages.push({ mine:true, text: note ? `${summary}. ${note}` : summary, time:'Jetzt' });
-  state.checkins.unshift({ type:'workout', client:'Anna Weber', label:summary, note, time:'Gerade eben' });
-  const anna = state.clients.find(c => c.name === 'Anna Weber');
-  if (anna) { anna.adherence = p.adherence; anna.last = 'Gerade eben'; }
+// Fortschritt nach einem abgeschlossenen Training (Kern des Coaching-Loops).
+function nextWorkoutProgress(p) {
+  return {
+    sessionsDone: Math.min(p.sessionsGoal, p.sessionsDone + 1),
+    sessionsGoal: p.sessionsGoal,
+    totalSessions: p.totalSessions + 1,
+    adherence: Math.min(100, p.adherence + 2),
+    performance: p.performance + 1
+  };
 }
+function applyWorkoutProgress() { state.progress = nextWorkoutProgress(state.progress); }
 
 function showModal(type) {
   const content={
@@ -358,6 +464,7 @@ function showModal(type) {
     state.clientView='appointments';
     renderClient();
     toast(`Termin bestätigt: ${btn.textContent}`);
+    if (API.connected) API.putAppointment(state.appointment).catch(()=>toast('Termin konnte nicht synchronisiert werden'));
   });
 }
 
@@ -378,7 +485,7 @@ function adminShell(content,title,view=state.adminView) {
 
 function adminDashboard() {
   const openCheckins = 7 + state.checkins.length;
-  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${(c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2)}</div><div><strong>${c.client} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${c.label}${c.note?` – „${c.note}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center"><small class="muted">${c.time}</small><button class="btn btn-ghost btn-small" data-admin="chat">Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
+  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${escapeHtml((c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><strong>${escapeHtml(c.client)} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${escapeHtml(c.label)}${c.note?` – „${escapeHtml(c.note)}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center"><small class="muted">${escapeHtml(c.time)}</small><button class="btn btn-ghost btn-small" data-admin="chat">Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
   return adminShell(`<div class="row-between"><div><span class="eyebrow">Montag, 12. Juli</span><h1 style="font-size:2.8rem;margin:4px 0">Guten Morgen, Sergio.</h1><p style="color:#666">Vier Kunden brauchen heute deine Aufmerksamkeit.</p></div><button class="btn btn-primary" data-admin="plans">＋ Plan erstellen</button></div>
   <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>${openCheckins}</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><button class="btn btn-ghost btn-small" data-admin="appointments">Nächster: 11:30 →</button></div></section>
   ${liveFeed}
@@ -405,26 +512,31 @@ function adminPlans() {
 
 function exerciseBuilderRow(e,i){ return `<div class="exercise-row"><span class="muted">☷</span><div><strong>${e.name}</strong><small class="muted" style="display:block">Pause: ${e.rest}</small></div><input value="3 Sätze" aria-label="Sätze ${e.name}"><input value="${e.target.split('×')[1]?.trim()||e.target}" aria-label="Ziel ${e.name}"><button class="icon-btn remove-exercise" data-remove="${i}" aria-label="Übung entfernen">×</button></div>`; }
 
+function adminChat() {
+  const clientMsgs = state.messages.filter(m => !m.mine).length;
+  const thread = state.messages.length
+    ? state.messages.map(m=>`<div class="message ${m.mine?'mine':''}">${escapeHtml(m.text)}<small>${escapeHtml(m.time)}</small></div>`).join('')
+    : '<p class="muted">Noch keine Nachrichten.</p>';
+  return adminShell(`<div class="row-between"><div><span class="eyebrow">Persönlicher Kundenaustausch</span><h1 style="font-size:2.8rem">Nachrichten</h1></div><span class="tag ${clientMsgs?'green':''}">${clientMsgs} von Anna</span></div>
+  <div class="card card-pad"><div class="row" style="margin-bottom:16px"><div class="avatar">AW</div><div><strong>Anna Weber</strong><small class="muted" style="display:block"><span class="status-dot"></span>Strong Start · Woche 3</small></div></div>
+  <div class="chat-list">${thread}</div>
+  <form id="adminChatForm" class="row" style="margin-top:18px;gap:10px"><input id="adminChatInput" aria-label="Nachricht an Anna" placeholder="Antwort an Anna …" style="flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#202224;color:#fff"><button class="btn btn-primary" type="submit">Senden</button></form></div>`, 'Nachrichten','chat');
+}
+
 function adminGeneric(view) {
-  const lastFromAnna = [...state.messages].reverse().find(m => m.mine);
-  const chatItems = [
-    `Anna: „${lastFromAnna ? lastFromAnna.text.slice(0,42) : 'Ich bin bereit.'}“`,
-    'Jonas: „Kannst du meinen Plan prüfen?“',
-    'Miriam: „Training erledigt!“'
-  ];
-  const data={nutrition:['Ernährungspläne','Pläne und Gewohnheiten',['Anna · Balanced Performance','Jonas · Muscle Fuel','Miriam · Lady Fit Nutrition']],media:['Mediathek','Videos, PDFs und Bilder',['Kniebeugen richtig ausführen · Video','Maestro Personal · PDF','10 Minuten Mobility · Video']],chat:['Nachrichten','Persönlicher Kundenaustausch',chatItems]};
+  const data={nutrition:['Ernährungspläne','Pläne und Gewohnheiten',['Anna · Balanced Performance','Jonas · Muscle Fuel','Miriam · Lady Fit Nutrition']],media:['Mediathek','Videos, PDFs und Bilder',['Kniebeugen richtig ausführen · Video','Maestro Personal · PDF','10 Minuten Mobility · Video']]};
   const [title,sub,items]=data[view];
   return adminShell(`<div class="row-between"><div><span class="eyebrow">${sub}</span><h1 style="font-size:2.8rem">${title}</h1></div><button class="btn btn-primary">＋ Neu anlegen</button></div><div class="grid-3">${items.map((x,i)=>`<div class="card card-pad"><span class="tag ${i===0?'green':''}">${i===0?'Aktiv':'Vorlage'}</span><h2 style="margin:14px 0 6px">${x}</h2><p class="muted">Zuletzt bearbeitet ${i+1} Tag${i?'en':''}</p><button class="btn btn-ghost btn-small">Öffnen →</button></div>`).join('')}</div>`,title,view);
 }
 
 function renderAdmin() {
   saveState();
-  const views={dashboard:adminDashboard,clients:adminClients,appointments:adminAppointments,plans:adminPlans,nutrition:()=>adminGeneric('nutrition'),media:()=>adminGeneric('media'),chat:()=>adminGeneric('chat')};
+  const views={dashboard:adminDashboard,clients:adminClients,appointments:adminAppointments,plans:adminPlans,nutrition:()=>adminGeneric('nutrition'),media:()=>adminGeneric('media'),chat:adminChat};
   app.innerHTML=views[state.adminView]();
   document.querySelectorAll('[data-admin]').forEach(btn=>btn.onclick=()=>{state.adminView=btn.dataset.admin;renderAdmin();});
   document.querySelectorAll('[data-preview]').forEach(btn=>btn.onclick=()=>{state.role='client';state.clientView='today';renderClient();toast('Kundenvorschau geöffnet');});
   document.querySelectorAll('[data-call]').forEach(btn=>btn.onclick=()=>showCallModal(btn.dataset.call));
-  document.querySelector('#logout')?.addEventListener('click',()=>{state.loggedIn=false;login();});
+  document.querySelector('#logout')?.addEventListener('click',()=>{doLogout();});
   document.querySelector('#invite')?.addEventListener('click',()=>showAdminModal('Kundin einladen','Ein sicherer Einladungslink wird per E-Mail versendet. Es gibt keine offene Registrierung.'));
   document.querySelector('#newAppointment')?.addEventListener('click',()=>showAdminModal('Neuen Check-in planen','Wähle einen Kunden und sende anschließend eine persönliche Termineinladung.'));
   document.querySelectorAll('[data-client]').forEach(row=>row.onclick=()=>showClientDetail(state.clients[Number(row.dataset.client)]));
@@ -432,6 +544,16 @@ function renderAdmin() {
   document.querySelector('#assignPlan')?.addEventListener('click',()=>toast('Full Body Power wurde Anna zugewiesen'));
   document.querySelector('#addExercise')?.addEventListener('click',()=>{state.exercises.push({name:'Mountain Climbers',target:'3 × 30 Sek.',rest:'45 Sek.',unit:'Sek.',values:[30,30,30],weight:[0,0,0],duration:true});renderAdmin();toast('Übung hinzugefügt');});
   document.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{state.exercises.splice(Number(btn.dataset.remove),1);renderAdmin();});
+  document.querySelector('#adminChatForm')?.addEventListener('submit',e=>{
+    e.preventDefault();
+    const input=document.querySelector('#adminChatInput');
+    const text=input.value.trim();
+    if(!text) return;
+    state.messages.push({mine:true, from:'sergio', text, time:'Jetzt'});
+    input.value='';
+    renderAdmin();
+    if (API.connected) syncState(API.postMessage(text)).then(()=>renderAdmin());
+  });
 }
 
 function showClientDetail(c) {
@@ -450,8 +572,27 @@ function showAdminModal(title,text){
 function render() { state.role==='client' ? renderClient() : renderAdmin(); }
 
 // --- Bootstrap ------------------------------------------------------------
-loadState();
-state.loggedIn ? render() : login();
+async function boot() {
+  loadState();
+  await API.detect();
+  if (API.connected) {
+    if (API.token) {
+      try {
+        applyServerState(await API.getState());
+        render();
+        startPolling();
+        return;
+      } catch (err) {
+        API.token = null; // abgelaufene/ungültige Sitzung → neu anmelden
+      }
+    }
+    login();
+    return;
+  }
+  // Kein Server erreichbar → lokaler Demo-/Offline-Modus
+  state.loggedIn ? render() : login();
+}
+boot();
 
 // Service Worker für Offline-Betrieb registrieren (nur über http/https aktiv).
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

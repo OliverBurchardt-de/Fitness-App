@@ -1,0 +1,13 @@
+{
+  "name": "maestro-plan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Maestro Plan – Personal-Training- und Coaching-App (Kunden-App + Trainer-Dashboard) mit dependency-freiem Node-Backend.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,10 @@
+# Laufzeitdaten des Servers (wird beim Start erzeugt)
+/data/
+
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Editor / OS
+.DS_Store

@@ -1,7 +1,23 @@
 # Bewertung: The Maestro Plan – Coaching-App
 
 **Stand:** 12. Juli 2026 · Branch `claude/website-purpose-analysis-a3u0jg`
-**Zweck dieses Dokuments:** Klären, *was die App leisten soll*, *was sie heute leistet*, und daraus *priorisierte nächste Schritte* ableiten. Es wird an dieser Stelle noch **nichts umgebaut** – dies ist eine reine Bewertung als Entscheidungsgrundlage.
+**Zweck dieses Dokuments:** Klären, *was die App leisten soll*, *was sie heute leistet*, und daraus *priorisierte nächste Schritte* ableiten.
+
+---
+
+## Update (nach der Ausbaustufe)
+
+Die ursprüngliche Bewertung unten beschreibt den **reinen Prototyp-Stand**. Inzwischen wurde die Demo entlang von Best Practices zu einem produktnahen Stand ausgebaut. **Erledigt:**
+
+- **Backend + Auth (🔴 → ✅):** dependency-freier Node-Server, scrypt-gehashte Passwörter, widerrufbare Session-Tokens.
+- **Datenspeicherung (🔴 → ✅):** serverseitige JSON-Datenschicht (Connected Mode) bzw. `localStorage` (Demo-Modus).
+- **Trainer ↔ Kunde (🔴 → ✅):** gemeinsame Datenbasis mit Live-Sync; ein Kunden-Check-in erscheint im Trainer-Dashboard, Trainer-Antworten im Kunden-Chat.
+- **Chat (🔴 → ✅):** echtes, beidseitiges Messaging über den Server.
+- **Coaching-Loops, PWA/Offline, Barrierefreiheit, XSS-Schutz:** umgesetzt (siehe `README.md`).
+
+**Noch offen für den Marktstart:** JSON-Datenschicht → echte Datenbank (Schnittstelle vorbereitet), Kalender-/Video-Anbieter statt Simulation, DSGVO-konforme Verarbeitung der Gesundheitsdaten, automatisierte Test- und Deployment-Pipeline.
+
+**Reifegrad neu:** ▓▓▓▓▓▓▓▓▓▓ Demo ≈ 100 %  ·  ▓▓▓▓▓░░░░░ Produkt/MVP ≈ 50 %
 
 ---
 
