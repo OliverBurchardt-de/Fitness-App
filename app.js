@@ -29,8 +29,38 @@ const state = {
     { name:'Jonas Klein', initials:'JK', plan:'Muscle Pro', adherence:72, status:'Check-in offen', alert:true, last:'Gestern' },
     { name:'Miriam Roth', initials:'MR', plan:'Lady Fit', adherence:94, status:'Aktiv', alert:false, last:'Vor 2 Std.' },
     { name:'Daniel Vogt', initials:'DV', plan:'Back in Motion', adherence:58, status:'Training verpasst', alert:true, last:'Vor 4 Tagen' }
-  ]
+  ],
+  progress: { sessionsDone: 2, sessionsGoal: 3, totalSessions: 8, adherence: 86, performance: 12 },
+  checkins: []
 };
+
+// --- Persistenz -----------------------------------------------------------
+// Der Demo-Zustand überlebt einen Reload, damit sich die App wie ein echtes
+// Produkt anfühlt. Flüchtige Dinge (laufender Timer, Blob-Vorschau des Fotos,
+// offener Workout-Screen) werden bewusst nicht gespeichert.
+const STORAGE_KEY = 'maestro-plan/v1';
+const PERSIST_KEYS = ['role','loggedIn','clientView','adminView','water','habits','appointment','messages','exercises','clients','progress','checkins'];
+
+function saveState() {
+  try {
+    const snapshot = {};
+    for (const key of PERSIST_KEYS) snapshot[key] = state[key];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+  } catch (err) { /* Speicher nicht verfügbar (z. B. Privatmodus) – Demo läuft trotzdem */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    for (const key of PERSIST_KEYS) if (key in data) state[key] = data[key];
+  } catch (err) { /* Beschädigte Daten ignorieren und mit Defaults starten */ }
+}
+
+function resetState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (err) { /* egal */ }
+}
 
 const icons = { today:'⌂', plan:'▦', nutrition:'◉', chat:'✦', appointments:'◷', more:'•••' };
 
@@ -74,6 +104,7 @@ function login() {
     </main>`;
   document.querySelectorAll('[data-role]').forEach(btn => btn.onclick = () => { state.role = btn.dataset.role; login(); });
   document.querySelector('#loginButton').onclick = () => { state.loggedIn = true; render(); };
+  saveState();
 }
 
 function mobileHeader(title='Heute') {
@@ -90,6 +121,8 @@ function bindMobileNav() {
 }
 
 function clientToday() {
+  const p = state.progress;
+  const weekPct = Math.round(Math.min(p.sessionsDone, p.sessionsGoal) / p.sessionsGoal * 100);
   return `
     ${mobileHeader('Heute')}
     <main class="mobile-main">
@@ -98,8 +131,8 @@ function clientToday() {
         <h1>Guten Morgen,<br><span class="gold">Anna.</span></h1>
         <p>Du bist stärker als deine Ausreden. Lass uns loslegen.</p>
       </section>
-      <div class="row-between" style="margin:18px 0 10px"><div><span class="eyebrow">Deine Woche</span><h2 style="margin:2px 0">2 von 3 Einheiten</h2></div><strong class="lime">67%</strong></div>
-      <div class="progress-line"><span style="width:67%"></span></div>
+      <div class="row-between" style="margin:18px 0 10px"><div><span class="eyebrow">Deine Woche</span><h2 style="margin:2px 0">${p.sessionsDone} von ${p.sessionsGoal} Einheiten</h2></div><strong class="lime">${weekPct}%</strong></div>
+      <div class="progress-line"><span style="width:${weekPct}%"></span></div>
       <section style="margin-top:28px">
         <div class="row-between"><h2>Heute trainieren</h2><span class="tag green">Bereit</span></div>
         <article class="card session-card">
@@ -123,7 +156,7 @@ function clientToday() {
         <div class="row-between"><h2>Sergio sagt</h2><button class="btn btn-ghost btn-small" data-view="chat">Antworten</button></div>
         <div class="card card-pad row" style="align-items:flex-start"><div class="avatar" style="background:var(--gold);color:#222">SM</div><div><strong>„Konstanz schlägt Perfektion.“</strong><p class="muted" style="margin:5px 0 0">Achte heute auf einen stabilen Rumpf. Ich schaue mir deine Werte danach an.</p></div></div>
       </section>
-      <section style="margin-top:28px"><h2>Dein Fortschritt</h2><div class="stats-row"><div class="stat"><strong>8</strong><small>Trainings</small></div><div class="stat"><strong>86%</strong><small>Plan erfüllt</small></div><div class="stat"><strong>+12%</strong><small>Leistung</small></div></div></section>
+      <section style="margin-top:28px"><h2>Dein Fortschritt</h2><div class="stats-row"><div class="stat"><strong>${p.totalSessions}</strong><small>Trainings</small></div><div class="stat"><strong>${p.adherence}%</strong><small>Plan erfüllt</small></div><div class="stat"><strong>+${p.performance}%</strong><small>Leistung</small></div></div></section>
     </main>${bottomNav()}`;
 }
 
@@ -181,6 +214,7 @@ function clientMore() {
 
 function renderClient() {
   clearInterval(state.timerId);
+  saveState();
   if (state.workoutOpen) return renderWorkout();
   const views = {today:clientToday, plan:clientPlan, nutrition:clientNutrition, chat:clientChat, appointments:clientAppointments, more:clientMore};
   app.innerHTML = `<div class="phone-app">${views[state.clientView]()}</div>`;
@@ -201,7 +235,13 @@ function renderClient() {
     renderClient();
   });
   document.querySelector('#saveMealPhoto')?.addEventListener('click', () => {
-    toast('Foto-Check-in gespeichert · Sergio wird informiert');
+    const note = state.mealPhoto?.note?.trim() || '';
+    state.messages.push({ mine:true, text: note ? `📷 Mahlzeiten-Check-in gesendet. ${note}` : '📷 Mahlzeiten-Check-in gesendet.', time:'Jetzt' });
+    state.checkins.unshift({ type:'meal', client:'Anna Weber', label:'Mahlzeiten-Foto zur Bewertung', note, time:'Gerade eben' });
+    if (state.mealPhoto?.previewUrl) URL.revokeObjectURL(state.mealPhoto.previewUrl);
+    state.mealPhoto = null;
+    toast('Foto-Check-in gesendet · Sergio wird informiert');
+    renderClient();
   });
   document.querySelectorAll('[data-water]').forEach(btn => btn.onclick=()=>{ state.water=Number(btn.dataset.water); renderClient(); });
   document.querySelectorAll('[data-habit]').forEach(input => input.onchange=()=>{ state.habits[Number(input.dataset.habit)]=input.checked; toast('Gewohnheit aktualisiert'); });
@@ -221,12 +261,14 @@ function renderWorkout() {
       <section style="padding-top:24px"><span class="eyebrow">${ex.target} · Pause ${ex.rest}</span><h1 style="font-size:2.8rem">${ex.name}</h1><p class="muted">Rumpf stabil halten, Bewegung kontrolliert ausführen und gleichmäßig atmen.</p></section>
       ${ex.duration ? `<div class="card card-pad"><span class="eyebrow">Intervall-Timer</span><div class="timer" id="timer">00:${String(state.timer).padStart(2,'0')}</div><div class="grid-2"><button id="timerStart" class="btn btn-primary">${state.timer<20?'Weiter':'Start'}</button><button id="timerReset" class="btn btn-ghost">Zurücksetzen</button></div></div>` : ''}
       <h2 style="margin-top:24px">Deine Sätze</h2>
-      <table class="set-table"><thead><tr><th>Satz</th><th>${ex.unit}</th><th>KG</th><th></th></tr></thead><tbody>${ex.values.map((v,i)=>`<tr><td>${i+1}</td><td><input aria-label="Wert Satz ${i+1}" value="${v}"></td><td><input aria-label="Gewicht Satz ${i+1}" value="${ex.weight[i]||'–'}"></td><td><button class="check ${state.setsDone[i]?'checked':''}" data-set="${i}">${state.setsDone[i]?'✓':'○'}</button></td></tr>`).join('')}</tbody></table>
+      <table class="set-table"><thead><tr><th>Satz</th><th>${ex.unit}</th><th>KG</th><th></th></tr></thead><tbody>${ex.values.map((v,i)=>`<tr><td>${i+1}</td><td><input inputmode="numeric" aria-label="Wert Satz ${i+1}" data-set-value="${i}" value="${v}"></td><td><input inputmode="numeric" aria-label="Gewicht Satz ${i+1}" data-set-weight="${i}" value="${ex.weight[i]||'–'}"></td><td><button class="check ${state.setsDone[i]?'checked':''}" data-set="${i}">${state.setsDone[i]?'✓':'○'}</button></td></tr>`).join('')}</tbody></table>
       <div class="card card-pad card-flat" style="margin-top:20px"><div class="row-between"><span>Empfundene Anstrengung</span><strong class="gold" id="rpeValue">7/10</strong></div><input id="rpe" type="range" min="1" max="10" value="7" style="width:100%;accent-color:var(--gold)"></div>
       <button id="nextExercise" class="btn btn-primary" style="width:100%;margin-top:20px">${state.exerciseIndex===state.exercises.length-1?'Training abschließen':'Nächste Übung →'}</button>
     </main></div>`;
   document.querySelector('#closeWorkout').onclick=()=>{ state.workoutOpen=false; renderClient(); };
   document.querySelectorAll('[data-set]').forEach(btn=>btn.onclick=()=>{ state.setsDone[Number(btn.dataset.set)]=!state.setsDone[Number(btn.dataset.set)]; renderWorkout(); });
+  document.querySelectorAll('[data-set-value]').forEach(input=>input.onchange=()=>{ const i=Number(input.dataset.setValue); const n=parseInt(input.value,10); if(!Number.isNaN(n)) ex.values[i]=n; saveState(); });
+  document.querySelectorAll('[data-set-weight]').forEach(input=>input.onchange=()=>{ const i=Number(input.dataset.setWeight); const n=parseInt(input.value,10); ex.weight[i]=Number.isNaN(n)?0:n; saveState(); });
   document.querySelector('#rpe').oninput=e=>document.querySelector('#rpeValue').textContent=`${e.target.value}/10`;
   document.querySelector('#timerStart')?.addEventListener('click',()=>{
     clearInterval(state.timerId); state.timerId=setInterval(()=>{ state.timer--; const el=document.querySelector('#timer'); if(el) el.textContent=`00:${String(Math.max(0,state.timer)).padStart(2,'0')}`; if(state.timer<=0){clearInterval(state.timerId);toast('Intervall geschafft!');}},1000);
@@ -241,8 +283,30 @@ function renderWorkout() {
 
 function showWorkoutComplete() {
   state.workoutOpen=false;
-  app.innerHTML=`<div class="phone-app"><main class="mobile-main" style="min-height:100vh;display:grid;place-items:center;text-align:center"><div><div style="font-size:5rem">⚡</div><span class="eyebrow">Training abgeschlossen</span><h1>Stark,<br><span class="gold">Anna!</span></h1><p class="muted">Du hast heute 3 Übungen und 9 Sätze absolviert.</p><div class="stats-row" style="margin:24px 0"><div class="stat"><strong>31:24</strong><small>Zeit</small></div><div class="stat"><strong>9</strong><small>Sätze</small></div><div class="stat"><strong>7/10</strong><small>Intensität</small></div></div><div class="form-field" style="text-align:left"><label for="feedback">Notiz an Sergio</label><textarea id="feedback" rows="3" placeholder="Wie lief dein Training?"></textarea></div><button id="finishWorkout" class="btn btn-primary" style="width:100%">Ergebnis speichern</button></div></main></div>`;
-  document.querySelector('#finishWorkout').onclick=()=>{ state.clientView='today'; toast('Training gespeichert · Sergio wurde informiert'); renderClient(); };
+  const exerciseCount = state.exercises.length;
+  const setCount = exerciseCount * 3;
+  app.innerHTML=`<div class="phone-app"><main class="mobile-main" style="min-height:100vh;display:grid;place-items:center;text-align:center"><div><div style="font-size:5rem">⚡</div><span class="eyebrow">Training abgeschlossen</span><h1>Stark,<br><span class="gold">Anna!</span></h1><p class="muted">Du hast heute ${exerciseCount} Übungen und ${setCount} Sätze absolviert.</p><div class="stats-row" style="margin:24px 0"><div class="stat"><strong>31:24</strong><small>Zeit</small></div><div class="stat"><strong>${setCount}</strong><small>Sätze</small></div><div class="stat"><strong>7/10</strong><small>Intensität</small></div></div><div class="form-field" style="text-align:left"><label for="feedback">Notiz an Sergio</label><textarea id="feedback" rows="3" placeholder="Wie lief dein Training?"></textarea></div><button id="finishWorkout" class="btn btn-primary" style="width:100%">Ergebnis speichern</button></div></main></div>`;
+  document.querySelector('#finishWorkout').onclick=()=>{
+    completeWorkout(document.querySelector('#feedback')?.value.trim() || '');
+    state.clientView='today';
+    toast('Training gespeichert · Sergio wurde informiert');
+    renderClient();
+  };
+}
+
+// Ein abgeschlossenes Training wirkt sich real auf Fortschritt, Chat und die
+// Trainer-Ansicht aus – der Kern eines geschlossenen Coaching-Loops.
+function completeWorkout(note) {
+  const p = state.progress;
+  p.sessionsDone = Math.min(p.sessionsGoal, p.sessionsDone + 1);
+  p.totalSessions += 1;
+  p.adherence = Math.min(100, p.adherence + 2);
+  p.performance += 1;
+  const summary = `Training „Full Body Power" abgeschlossen · ${state.exercises.length} Übungen`;
+  state.messages.push({ mine:true, text: note ? `${summary}. ${note}` : summary, time:'Jetzt' });
+  state.checkins.unshift({ type:'workout', client:'Anna Weber', label:summary, note, time:'Gerade eben' });
+  const anna = state.clients.find(c => c.name === 'Anna Weber');
+  if (anna) { anna.adherence = p.adherence; anna.last = 'Gerade eben'; }
 }
 
 function showModal(type) {
@@ -280,8 +344,11 @@ function adminShell(content,title,view=state.adminView) {
 }
 
 function adminDashboard() {
+  const openCheckins = 7 + state.checkins.length;
+  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${(c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2)}</div><div><strong>${c.client} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${c.label}${c.note?` – „${c.note}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center"><small class="muted">${c.time}</small><button class="btn btn-ghost btn-small" data-admin="chat">Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
   return adminShell(`<div class="row-between"><div><span class="eyebrow">Montag, 12. Juli</span><h1 style="font-size:2.8rem;margin:4px 0">Guten Morgen, Sergio.</h1><p style="color:#666">Vier Kunden brauchen heute deine Aufmerksamkeit.</p></div><button class="btn btn-primary" data-admin="plans">＋ Plan erstellen</button></div>
-  <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>7</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><button class="btn btn-ghost btn-small" data-admin="appointments">Nächster: 11:30 →</button></div></section>
+  <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>${openCheckins}</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><button class="btn btn-ghost btn-small" data-admin="appointments">Nächster: 11:30 →</button></div></section>
+  ${liveFeed}
   <section class="grid-2"><div class="card card-pad"><div class="row-between"><div><span class="eyebrow">Handlungsbedarf</span><h2>Heute wichtig</h2></div><span class="tag">4 Aufgaben</span></div><div class="stack"><div class="row-between"><div><strong>Jonas · Check-in prüfen</strong><small class="muted" style="display:block">Seit 2 Tagen offen</small></div><button class="btn btn-ghost btn-small">Öffnen</button></div><div class="divider"></div><div class="row-between"><div><strong>Daniel · Training verpasst</strong><small class="muted" style="display:block">Motivationsnachricht senden</small></div><button class="btn btn-ghost btn-small">Chat</button></div><div class="divider"></div><div class="row-between"><div><strong>Anna · Plan läuft aus</strong><small class="muted" style="display:block">Neuen Block vorbereiten</small></div><button class="btn btn-ghost btn-small">Plan</button></div></div></div><div class="card card-pad"><span class="eyebrow">Team-Aktivität</span><h2>Trainingsquote</h2><div class="chart">${[58,68,76,70,82,86,82].map((v,i)=>`<div class="bar ${i===6?'goldbar':''}" style="height:${v}%"><small style="position:absolute;bottom:-22px;color:var(--muted)">${['M','D','M','D','F','S','S'][i]}</small></div>`).join('')}</div></div></section>`, 'Übersicht','dashboard');
 }
 
@@ -306,12 +373,19 @@ function adminPlans() {
 function exerciseBuilderRow(e,i){ return `<div class="exercise-row"><span class="muted">☷</span><div><strong>${e.name}</strong><small class="muted" style="display:block">Pause: ${e.rest}</small></div><input value="3 Sätze" aria-label="Sätze ${e.name}"><input value="${e.target.split('×')[1]?.trim()||e.target}" aria-label="Ziel ${e.name}"><button class="icon-btn remove-exercise" data-remove="${i}" aria-label="Übung entfernen">×</button></div>`; }
 
 function adminGeneric(view) {
-  const data={nutrition:['Ernährungspläne','Pläne und Gewohnheiten',['Anna · Balanced Performance','Jonas · Muscle Fuel','Miriam · Lady Fit Nutrition']],media:['Mediathek','Videos, PDFs und Bilder',['Kniebeugen richtig ausführen · Video','Maestro Personal · PDF','10 Minuten Mobility · Video']],chat:['Nachrichten','Persönlicher Kundenaustausch',['Anna: „Ich bin bereit.“','Jonas: „Kannst du meinen Plan prüfen?“','Miriam: „Training erledigt!“']]};
+  const lastFromAnna = [...state.messages].reverse().find(m => m.mine);
+  const chatItems = [
+    `Anna: „${lastFromAnna ? lastFromAnna.text.slice(0,42) : 'Ich bin bereit.'}“`,
+    'Jonas: „Kannst du meinen Plan prüfen?“',
+    'Miriam: „Training erledigt!“'
+  ];
+  const data={nutrition:['Ernährungspläne','Pläne und Gewohnheiten',['Anna · Balanced Performance','Jonas · Muscle Fuel','Miriam · Lady Fit Nutrition']],media:['Mediathek','Videos, PDFs und Bilder',['Kniebeugen richtig ausführen · Video','Maestro Personal · PDF','10 Minuten Mobility · Video']],chat:['Nachrichten','Persönlicher Kundenaustausch',chatItems]};
   const [title,sub,items]=data[view];
   return adminShell(`<div class="row-between"><div><span class="eyebrow">${sub}</span><h1 style="font-size:2.8rem">${title}</h1></div><button class="btn btn-primary">＋ Neu anlegen</button></div><div class="grid-3">${items.map((x,i)=>`<div class="card card-pad"><span class="tag ${i===0?'green':''}">${i===0?'Aktiv':'Vorlage'}</span><h2 style="margin:14px 0 6px">${x}</h2><p class="muted">Zuletzt bearbeitet ${i+1} Tag${i?'en':''}</p><button class="btn btn-ghost btn-small">Öffnen →</button></div>`).join('')}</div>`,title,view);
 }
 
 function renderAdmin() {
+  saveState();
   const views={dashboard:adminDashboard,clients:adminClients,appointments:adminAppointments,plans:adminPlans,nutrition:()=>adminGeneric('nutrition'),media:()=>adminGeneric('media'),chat:()=>adminGeneric('chat')};
   app.innerHTML=views[state.adminView]();
   document.querySelectorAll('[data-admin]').forEach(btn=>btn.onclick=()=>{state.adminView=btn.dataset.admin;renderAdmin();});
@@ -339,4 +413,14 @@ function showAdminModal(title,text){
 }
 
 function render() { state.role==='client' ? renderClient() : renderAdmin(); }
-login();
+
+// --- Bootstrap ------------------------------------------------------------
+loadState();
+state.loggedIn ? render() : login();
+
+// Service Worker für Offline-Betrieb registrieren (nur über http/https aktiv).
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* Offline-Modus optional */ });
+  });
+}
