@@ -151,26 +151,53 @@ test('Trainer chattet gezielt mit einem bestimmten Kunden', async () => {
   assert.strictEqual(bad.status, 400);
 });
 
+const register = b => api('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
+
 test('Registrierung: gültig legt Kunde an und meldet an', async () => {
-  const res = await api('/api/register', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: 'Tina Test', email: 'tina@beispiel.de', password: 'geheim123' })
-  });
+  const res = await register({ name: 'Tina Test', email: 'tina@beispiel.de', password: 'geheim123', consent: true });
   assert.strictEqual(res.status, 201);
   const body = await res.json();
   assert.ok(body.token);
   assert.strictEqual(body.state.user.role, 'client');
   assert.strictEqual(body.state.user.name, 'Tina Test');
-  // Danach normal anmeldbar
   const relog = await login('tina@beispiel.de', 'geheim123');
   assert.strictEqual(relog.status, 200);
 });
 
-test('Registrierung: Validierung (E-Mail, Passwortlänge, Duplikat)', async () => {
-  const post = b => api('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
-  assert.strictEqual((await post({ name: 'X', email: 'keine-email', password: 'geheim123' })).status, 400);
-  assert.strictEqual((await post({ name: 'Y Z', email: 'yz@beispiel.de', password: 'kurz' })).status, 400);
-  assert.strictEqual((await post({ name: 'Anna', email: 'anna@beispiel.de', password: 'geheim123' })).status, 409);
+test('Registrierung: Validierung (E-Mail, Passwort, Einwilligung, Duplikat)', async () => {
+  assert.strictEqual((await register({ name: 'X', email: 'keine-email', password: 'geheim123', consent: true })).status, 400);
+  assert.strictEqual((await register({ name: 'Y Z', email: 'yz@beispiel.de', password: 'kurz', consent: true })).status, 400);
+  assert.strictEqual((await register({ name: 'Ohne Consent', email: 'oc@beispiel.de', password: 'geheim123' })).status, 400);
+  assert.strictEqual((await register({ name: 'Anna', email: 'anna@beispiel.de', password: 'geheim123', consent: true })).status, 409);
+});
+
+test('DSGVO: Datenexport enthält die eigenen Daten', async () => {
+  const reg = await (await register({ name: 'Export Ute', email: 'ute@beispiel.de', password: 'geheim123', consent: true })).json();
+  const auth = { Authorization: 'Bearer ' + reg.token };
+  await api('/api/checkins', { method: 'POST', headers: { 'Content-Type': 'application/json', ...auth }, body: JSON.stringify({ type: 'workout', label: 'Export-Training' }) });
+  const res = await api('/api/me/export', { headers: auth });
+  assert.strictEqual(res.status, 200);
+  assert.match(res.headers.get('content-disposition') || '', /attachment/);
+  const data = await res.json();
+  assert.strictEqual(data.profile.email, 'ute@beispiel.de');
+  assert.ok(data.consentAt, 'Einwilligungszeitpunkt ist protokolliert');
+  assert.ok(data.checkins.some(c => c.label === 'Export-Training'));
+});
+
+test('DSGVO: Kontolöschung entfernt Konto und Daten', async () => {
+  const reg = await (await register({ name: 'Weg Willi', email: 'willi@beispiel.de', password: 'geheim123', consent: true })).json();
+  const auth = { Authorization: 'Bearer ' + reg.token };
+  const del = await api('/api/me', { method: 'DELETE', headers: auth });
+  assert.strictEqual(del.status, 200);
+  // Danach ist Login nicht mehr möglich und das Token ungültig
+  assert.strictEqual((await login('willi@beispiel.de', 'geheim123')).status, 401);
+  assert.strictEqual((await api('/api/state', { headers: auth })).status, 401);
+});
+
+test('DSGVO: Trainer kann sich nicht über die Kunden-Route löschen', async () => {
+  const sergio = await (await login('sergio@maestro-plan.de', 'prototyp')).json();
+  const del = await api('/api/me', { method: 'DELETE', headers: { Authorization: 'Bearer ' + sergio.token } });
+  assert.strictEqual(del.status, 403);
 });
 
 test('Passwort-Reset: Token setzt neues Passwort', async () => {

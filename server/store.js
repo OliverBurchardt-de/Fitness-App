@@ -256,7 +256,7 @@ function initials(name) {
   return String(name).trim().split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || 'NN';
 }
 
-function registerClient({ email, name, password }) {
+function registerClient({ email, name, password, consentAt }) {
   // Eindeutige, URL-taugliche ID aus dem lokalen E-Mail-Teil ableiten.
   const baseSlug = String(email).split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() || 'kunde';
   let id = baseSlug;
@@ -265,6 +265,7 @@ function registerClient({ email, name, password }) {
   const user = {
     id, email: String(email).toLowerCase(), name: String(name).trim(), initials: initials(name),
     role: 'client', trainerId: 'sergio', plan: 'Starter', status: 'Neu', alert: false, last: 'Gerade registriert',
+    consentAt: consentAt || null,
     passwordHash: hashPassword(password)
   };
   db.users.push(user);
@@ -297,6 +298,33 @@ function resetPassword(token, newPassword) {
   return u;
 }
 
+// --- DSGVO-Selbstbedienung ------------------------------------------------
+// Alle personenbezogenen Daten eines Nutzers als maschinenlesbare Kopie (Art. 20).
+function exportData(user) {
+  const id = user.id;
+  return {
+    exportedAt: new Date().toISOString(),
+    profile: { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan || null },
+    consentAt: user.consentAt || null,
+    progress: db.progress[id] || null,
+    appointment: db.appointments[id] || null,
+    messages: db.messages.filter(m => m.from === id || m.to === id),
+    checkins: db.checkins.filter(c => c.clientId === id)
+  };
+}
+
+// Konto und alle zugehörigen Daten unwiderruflich löschen (Art. 17).
+function deleteAccount(user) {
+  const id = user.id;
+  db.users = db.users.filter(u => u.id !== id);
+  db.messages = db.messages.filter(m => m.from !== id && m.to !== id);
+  db.checkins = db.checkins.filter(c => c.clientId !== id);
+  delete db.progress[id];
+  delete db.appointments[id];
+  for (const [token, s] of Object.entries(db.sessions)) if (s.userId === id) delete db.sessions[token];
+  persist();
+}
+
 function httpError(status, message) {
   const err = new Error(message);
   err.status = status;
@@ -310,5 +338,6 @@ module.exports = {
   publicUser, stateFor, clientDetail,
   addMessage, addCheckin, patchProgress, setAppointment,
   registerClient, createResetToken, resetPassword,
+  exportData, deleteAccount,
   httpError, DB_FILE, UPLOADS_DIR
 };

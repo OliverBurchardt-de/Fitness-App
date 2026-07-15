@@ -120,7 +120,7 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/register' && method === 'POST') {
     checkLoginRate(req);
-    const { email, name, password } = await readBody(req);
+    const { email, name, password, consent } = await readBody(req);
     const emailOk = typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!emailOk || typeof name !== 'string' || name.trim().length < 2) {
       recordLoginFailure(req); throw store.httpError(400, 'Bitte gültigen Namen und eine E-Mail-Adresse angeben');
@@ -128,10 +128,28 @@ async function handleApi(req, res, pathname) {
     if (typeof password !== 'string' || password.length < 8) {
       recordLoginFailure(req); throw store.httpError(400, 'Passwort muss mindestens 8 Zeichen haben');
     }
+    if (consent !== true) throw store.httpError(400, 'Bitte stimme der Verarbeitung deiner Daten zu');
     if (store.findUserByEmail(email)) throw store.httpError(409, 'Für diese E-Mail existiert bereits ein Konto');
-    const user = store.registerClient({ email, name, password });
+    const user = store.registerClient({ email, name, password, consentAt: new Date().toISOString() });
     const token = store.createSession(user.id);
     return sendJson(res, 201, { token, state: store.stateFor(user) });
+  }
+
+  if (pathname === '/api/me/export' && method === 'GET') {
+    const user = requireUser(req);
+    return send(res, 200, store.exportData(user), {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="maestro-plan-export.json"'
+    });
+  }
+
+  if (pathname === '/api/me' && method === 'DELETE') {
+    const user = requireUser(req);
+    if (user.role !== 'client') throw store.httpError(403, 'Nur Kundenkonten können sich hier selbst löschen');
+    store.deleteAccount(user);
+    const token = bearer(req);
+    if (token) store.destroySession(token);
+    return sendJson(res, 200, { ok: true });
   }
 
   if (pathname === '/api/password/forgot' && method === 'POST') {

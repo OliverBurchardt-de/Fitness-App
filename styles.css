@@ -273,6 +273,10 @@ p { line-height: 1.55; }
 /* Live-Feed neuer Check-ins im Trainer-Dashboard */
 .live-feed { border-left:3px solid var(--lime); }
 
+/* Einwilligung bei der Registrierung */
+.consent-row { display:flex; gap:10px; align-items:flex-start; margin-top:6px; font-size:.82rem; color:#555; cursor:pointer; }
+.consent-row input { margin-top:3px; accent-color:var(--lime); }
+
 /* Auth-Umschalter (Anmelden / Registrieren / Passwort vergessen) */
 .auth-switch { text-align:center; margin-top:14px; font-size:.85rem; color:#777; }
 .auth-switch a { color:var(--gold-light); font-weight:600; text-decoration:none; }

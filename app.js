@@ -215,6 +215,7 @@ function authPanel() {
       <div class="form-field"><label for="regName">Name</label><input id="regName" placeholder="Vor- und Nachname" autocomplete="name"></div>
       <div class="form-field"><label for="regEmail">E-Mail</label><input id="regEmail" type="email" placeholder="du@beispiel.de" autocomplete="email"></div>
       <div class="form-field"><label for="regPassword">Passwort</label><input id="regPassword" type="password" placeholder="mindestens 8 Zeichen" autocomplete="new-password"></div>
+      <label class="consent-row"><input type="checkbox" id="regConsent"><span>Ich stimme der Verarbeitung meiner Daten gemäß Datenschutzerklärung zu.</span></label>
       <button id="registerButton" class="btn btn-primary" style="width:100%;margin-top:12px">Konto erstellen →</button>
       <p class="auth-switch">Schon ein Konto? <a href="#" data-auth="login">Anmelden</a></p>`;
   }
@@ -275,10 +276,12 @@ function login() {
   });
 
   withButton('registerButton', async () => {
+    if (!document.querySelector('#regConsent').checked) { throw new Error('Bitte stimme der Datenverarbeitung zu'); }
     applyServerState(await API.register(
       document.querySelector('#regName').value.trim(),
       document.querySelector('#regEmail').value.trim(),
-      document.querySelector('#regPassword').value
+      document.querySelector('#regPassword').value,
+      true
     ));
     render(); startPolling();
   });
@@ -537,7 +540,7 @@ function showModal(type) {
     booking:`<span class="eyebrow">Persönlicher Austausch</span><h2>Termin mit Sergio</h2><p class="muted">Wähle einen freien Coaching-Termin. Im produktiven MVP wird hier der Buchungsanbieter angebunden.</p><div class="stack">${['Dienstag, 14. Juli · 09:30','Mittwoch, 15. Juli · 17:00','Freitag, 17. Juli · 11:30'].map(x=>`<button class="btn btn-dark slot">${x}</button>`).join('')}</div>`,
     video:`<span class="eyebrow">Maestro Videothek</span><h2>Trainiere mit Sergio</h2><div class="stack"><div class="card card-pad card-flat"><strong>▶ Kniebeugen richtig ausführen</strong><small class="muted" style="display:block">Technik · 03:42 Min.</small></div><div class="card card-pad card-flat"><strong>▶ 10 Minuten Mobility</strong><small class="muted" style="display:block">Beweglichkeit · 10:18 Min.</small></div><div class="card card-pad card-flat"><strong>▶ Core Power Express</strong><small class="muted" style="display:block">Workout · 16:05 Min.</small></div></div>`,
     progress:`<span class="eyebrow">Letzte 8 Wochen</span><h2>Deine Entwicklung</h2><div class="chart">${[42,48,45,56,64,62,75,86].map((v,i)=>`<div class="bar ${i>5?'goldbar':''}" style="height:${v}%" title="${v}%"></div>`).join('')}</div><div class="grid-3" style="margin-top:20px"><div><strong class="gold">−2,4 kg</strong><small class="muted" style="display:block">Gewicht</small></div><div><strong class="gold">+12%</strong><small class="muted" style="display:block">Leistung</small></div><div><strong class="gold">86%</strong><small class="muted" style="display:block">Konstanz</small></div></div>`,
-    privacy:`<span class="eyebrow">Deine Daten</span><h2>Privatsphäre & Kontrolle</h2><div class="stack"><button class="quick-action"><strong>Einwilligungen verwalten</strong><span class="muted">2 aktive Einwilligungen</span></button><button class="quick-action"><strong>Datenexport anfordern</strong><span class="muted">Maschinenlesbare Kopie</span></button><button class="quick-action"><strong>Konto löschen</strong><span class="muted">Kontrollierter Löschprozess</span></button></div>`
+    privacy:`<span class="eyebrow">Deine Daten</span><h2>Privatsphäre & Kontrolle</h2><div class="stack"><button class="quick-action" id="exportData"><strong>↓ Datenexport anfordern</strong><span class="muted">Maschinenlesbare Kopie (Art. 20 DSGVO)</span></button><button class="quick-action" id="deleteAccount"><strong>⨯ Konto löschen</strong><span class="muted">Konto und alle Daten unwiderruflich entfernen (Art. 17)</span></button></div><p class="muted" style="font-size:.78rem;margin-top:14px">${API.connected?'Diese Aktionen wirken sofort auf deine echten Kontodaten.':'Im Demo-Modus ohne Server sind diese Aktionen deaktiviert.'}</p>`
   };
   document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between" style="align-items:flex-start"><div style="flex:1">${content[type]}</div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div></div></div>`);
   enhanceModal(document.body.lastElementChild);
@@ -551,6 +554,32 @@ function showModal(type) {
     renderClient();
     toast(`Termin bestätigt: ${btn.textContent}`);
     if (API.connected) API.putAppointment(state.appointment).catch(()=>toast('Termin konnte nicht synchronisiert werden'));
+  });
+  document.querySelector('#exportData')?.addEventListener('click', async () => {
+    if (!API.connected) { toast('Im Demo-Modus nicht verfügbar'); return; }
+    try {
+      const data = await API.exportData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'maestro-plan-export.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast('Datenexport heruntergeladen');
+    } catch (err) { toast('Export fehlgeschlagen'); }
+  });
+  document.querySelector('#deleteAccount')?.addEventListener('click', async () => {
+    if (!API.connected) { toast('Im Demo-Modus nicht verfügbar'); return; }
+    if (!confirm('Konto und alle zugehörigen Daten wirklich unwiderruflich löschen?')) return;
+    try {
+      await API.deleteAccount();
+      document.querySelector('.modal-backdrop')?.remove();
+      state.loggedIn = false; authMode = 'login';
+      state.user = { name: 'Anna Weber', initials: 'AW' };
+      clearInterval(pollTimer);
+      toast('Konto gelöscht');
+      login();
+    } catch (err) { toast('Löschen fehlgeschlagen'); }
   });
 }
 
