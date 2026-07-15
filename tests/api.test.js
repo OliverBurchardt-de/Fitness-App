@@ -8,6 +8,7 @@ const path = require('node:path');
 // Isoliertes Datenverzeichnis, damit Tests echte Daten nicht anfassen.
 const TMP = path.join(os.tmpdir(), 'maestro-test-' + process.pid);
 process.env.MAESTRO_DATA_DIR = TMP;
+process.env.MAESTRO_DEV = '1'; // aktiviert devToken in der Passwort-Reset-Antwort für Tests
 
 let server, base;
 
@@ -148,6 +149,52 @@ test('Trainer chattet gezielt mit einem bestimmten Kunden', async () => {
     body: JSON.stringify({ to: 'sergio', text: 'x' })
   });
   assert.strictEqual(bad.status, 400);
+});
+
+test('Registrierung: gültig legt Kunde an und meldet an', async () => {
+  const res = await api('/api/register', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Tina Test', email: 'tina@beispiel.de', password: 'geheim123' })
+  });
+  assert.strictEqual(res.status, 201);
+  const body = await res.json();
+  assert.ok(body.token);
+  assert.strictEqual(body.state.user.role, 'client');
+  assert.strictEqual(body.state.user.name, 'Tina Test');
+  // Danach normal anmeldbar
+  const relog = await login('tina@beispiel.de', 'geheim123');
+  assert.strictEqual(relog.status, 200);
+});
+
+test('Registrierung: Validierung (E-Mail, Passwortlänge, Duplikat)', async () => {
+  const post = b => api('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
+  assert.strictEqual((await post({ name: 'X', email: 'keine-email', password: 'geheim123' })).status, 400);
+  assert.strictEqual((await post({ name: 'Y Z', email: 'yz@beispiel.de', password: 'kurz' })).status, 400);
+  assert.strictEqual((await post({ name: 'Anna', email: 'anna@beispiel.de', password: 'geheim123' })).status, 409);
+});
+
+test('Passwort-Reset: Token setzt neues Passwort', async () => {
+  const forgot = await (await api('/api/password/forgot', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'daniel@beispiel.de' })
+  })).json();
+  assert.ok(forgot.devToken, 'devToken im Testmodus vorhanden'); // MAESTRO_DEV=1
+  const reset = await api('/api/password/reset', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: forgot.devToken, password: 'neuespasswort' })
+  });
+  assert.strictEqual(reset.status, 200);
+  assert.strictEqual((await login('daniel@beispiel.de', 'neuespasswort')).status, 200);
+  assert.strictEqual((await login('daniel@beispiel.de', 'prototyp')).status, 401);
+});
+
+test('Passwort vergessen: neutrale Antwort bei unbekannter E-Mail', async () => {
+  const res = await (await api('/api/password/forgot', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'gibtsnicht@beispiel.de' })
+  })).json();
+  assert.strictEqual(res.ok, true);
+  assert.ok(!res.devToken, 'kein Token für unbekannte E-Mail');
 });
 
 test('Rate-Limiting greift nach vielen Fehlversuchen', async () => {

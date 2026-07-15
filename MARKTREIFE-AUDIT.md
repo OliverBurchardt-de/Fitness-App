@@ -27,8 +27,9 @@ Beim Gegenprüfen fiel eine **echte Sicherheitslücke** auf, die sofort geschlos
 - ✅ **Automatisierte Tests + CI:** 16 Tests (Auth, geteilte Daten, **Mehrmandantenfähigkeit**, Foto-Upload, Security-Header, blockierte interne Pfade, Rate-Limit) mit Node-Test-Runner; GitHub-Actions-Pipeline.
 - ✅ **Echte Mehrmandantenfähigkeit (🔴 → ✅):** Der Trainer betreut jetzt **mehrere echte Kundenkonten** mit pro Kunde isolierten Daten (Fortschritt, Chat, Check-ins, Termine); gezielter Chat je Kunde und echte Kundendetail-Ansicht. Die harte `'anna'`-Verdrahtung ist entfernt. Per API- und Browser-Tests abgesichert (Isolation verifiziert: Kunde A sieht Kunde B nicht).
 - ✅ **Rate-Limit korrigiert:** zählt nur Fehlversuche und sperrt keine legitimen Nutzer hinter geteilten IPs aus.
+- ✅ **Registrierung & Passwort-Reset (🔴 → ✅):** Selbst-Registrierung neuer Kunden mit Validierung (Name, E-Mail-Format, Passwortstärke, Eindeutigkeit) und Passwort-Reset per Token; neutrale Antwort gegen Konto-Enumeration; App personalisiert auf den angemeldeten Nutzer. Der E-Mail-Versand des Links ist ehrlich gestubbt (geloggt; Dev-Token nur mit `MAESTRO_DEV=1`). Per API- (20 Tests) und Browser-Tests abgesichert.
 
-Die Kategorientabellen unten zeigen weiterhin den **ursprünglichen** Prüfstand; die obigen Punkte sind damit teilweise bereits abgehakt. **Weiterhin offen** bleiben v. a. echte Datenbank, DSGVO, Zahlungen, echte Video-Calls, Registrierung/Onboarding, native Apps.
+Die Kategorientabellen unten zeigen weiterhin den **ursprünglichen** Prüfstand; die obigen Punkte sind damit teilweise bereits abgehakt. **Weiterhin offen** bleiben v. a. echte Datenbank, DSGVO, Zahlungen, echte Video-Calls, E-Mail-/Push-Versand, native Apps.
 
 ---
 

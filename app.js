@@ -34,7 +34,8 @@ const state = {
   checkins: [],
   adminChatClientId: null,
   adminThread: [],
-  adminThreadFor: null
+  adminThreadFor: null,
+  user: { name: 'Anna Weber', initials: 'AW' }
 };
 
 // --- Persistenz -----------------------------------------------------------
@@ -75,6 +76,7 @@ let pollTimer = null;
 function applyServerState(s) {
   if (!s) return;
   if (s.user && s.user.role) state.role = s.user.role;
+  if (s.user) state.user = { name: s.user.name, initials: s.user.initials };
   state.loggedIn = true;
   if (Array.isArray(s.messages)) state.messages = s.messages.map(m => ({ mine: !!m.mine, from: m.from, text: m.text, time: m.time }));
   if (Array.isArray(s.checkins)) state.checkins = s.checkins.map(c => ({ type: c.type, client: c.client, clientId: c.clientId, label: c.label, note: c.note, time: c.time, photoUrl: c.photoUrl }));
@@ -95,6 +97,8 @@ async function doLogout() {
   clearInterval(pollTimer);
   if (API.connected) { try { await API.logout(); } catch (err) { /* trotzdem lokal abmelden */ } }
   state.loggedIn = false;
+  state.user = { name: 'Anna Weber', initials: 'AW' };
+  authMode = 'login';
   saveState();
   login();
 }
@@ -177,58 +181,125 @@ function brand(compact = false) {
   return `<div class="brand"><img class="brand-logo" src="assets/maestro-logo.png" alt="The Maestro Plan">${compact ? '' : '<div class="brand-copy"><strong>Maestro Plan</strong><small>Inspiring your health</small></div>'}</div>`;
 }
 
+let authMode = 'login'; // login | register | forgot | reset
+let resetToken = '';
+
+function loginVisual() {
+  return `<section class="login-visual">${brand()}
+    <div class="login-quote">
+      <span class="eyebrow">Persönlich. Präzise. Energiegeladen.</span>
+      <h1>Dein Plan.<br><span class="gold">Dein Tempo.</span><br>Dein Erfolg.</h1>
+      <p>Individuelles Coaching von Sergio – überall an deiner Seite.</p>
+    </div>
+  </section>`;
+}
+
+function authPanel() {
+  // Demo-/Offline-Modus: unveränderter Perspektiven-Umschalter.
+  if (!API.connected) {
+    return `<span class="eyebrow">Interaktiver Prototyp</span>
+      <h2>Willkommen zurück</h2>
+      <p style="color:#666">Wähle eine Perspektive und entdecke die Maestro Plan App.</p>
+      <div class="role-picker" aria-label="Perspektive wählen">
+        <button class="role-card ${state.role==='client'?'active':''}" data-role="client"><strong>Als Kunde</strong><small>Training & Coaching</small></button>
+        <button class="role-card ${state.role==='trainer'?'active':''}" data-role="trainer"><strong>Als Sergio</strong><small>Trainer-Dashboard</small></button>
+      </div>
+      <div class="form-field"><label for="email">E-Mail</label><input id="email" value="${state.role==='client'?'anna@beispiel.de':'sergio@maestro-plan.de'}" /></div>
+      <div class="form-field"><label for="password">Passwort</label><input id="password" type="password" value="prototyp" /></div>
+      <button id="loginButton" class="btn btn-primary" style="width:100%;margin-top:12px">Demo starten →</button>
+      <p style="color:#777;font-size:.8rem;text-align:center;margin-top:18px">Demo-Daten · Keine echten Gesundheitsdaten</p>`;
+  }
+  if (authMode === 'register') {
+    return `<span class="eyebrow">Neu bei Maestro Plan</span><h2>Konto erstellen</h2>
+      <p style="color:#666">Starte dein persönliches Coaching mit Sergio.</p>
+      <div class="form-field"><label for="regName">Name</label><input id="regName" placeholder="Vor- und Nachname" autocomplete="name"></div>
+      <div class="form-field"><label for="regEmail">E-Mail</label><input id="regEmail" type="email" placeholder="du@beispiel.de" autocomplete="email"></div>
+      <div class="form-field"><label for="regPassword">Passwort</label><input id="regPassword" type="password" placeholder="mindestens 8 Zeichen" autocomplete="new-password"></div>
+      <button id="registerButton" class="btn btn-primary" style="width:100%;margin-top:12px">Konto erstellen →</button>
+      <p class="auth-switch">Schon ein Konto? <a href="#" data-auth="login">Anmelden</a></p>`;
+  }
+  if (authMode === 'forgot') {
+    return `<span class="eyebrow">Passwort vergessen</span><h2>Zurücksetzen</h2>
+      <p style="color:#666">Gib deine E-Mail an – wir senden dir einen Link zum Zurücksetzen.</p>
+      <div class="form-field"><label for="forgotEmail">E-Mail</label><input id="forgotEmail" type="email" placeholder="du@beispiel.de" autocomplete="email"></div>
+      <button id="forgotButton" class="btn btn-primary" style="width:100%;margin-top:12px">Link anfordern</button>
+      <p class="auth-switch"><a href="#" data-auth="login">Zurück zur Anmeldung</a></p>`;
+  }
+  if (authMode === 'reset') {
+    return `<span class="eyebrow">Neues Passwort</span><h2>Passwort setzen</h2>
+      <p style="color:#666">Wähle ein neues Passwort für dein Konto.</p>
+      <div class="form-field"><label for="resetPassword">Neues Passwort</label><input id="resetPassword" type="password" placeholder="mindestens 8 Zeichen" autocomplete="new-password"></div>
+      <button id="resetButton" class="btn btn-primary" style="width:100%;margin-top:12px">Passwort speichern</button>
+      <p class="auth-switch"><a href="#" data-auth="login">Zurück zur Anmeldung</a></p>`;
+  }
+  // login
+  return `<span class="eyebrow">Willkommen zurück</span><h2>Anmelden</h2>
+    <p style="color:#666">Melde dich mit deinem Maestro-Plan-Konto an.</p>
+    <div class="form-field"><label for="email">E-Mail</label><input id="email" type="email" placeholder="du@beispiel.de" autocomplete="email"></div>
+    <div class="form-field"><label for="password">Passwort</label><input id="password" type="password" placeholder="Passwort" autocomplete="current-password"></div>
+    <button id="loginButton" class="btn btn-primary" style="width:100%;margin-top:12px">Anmelden →</button>
+    <p class="auth-switch"><a href="#" data-auth="forgot">Passwort vergessen?</a></p>
+    <p class="auth-switch">Neu hier? <a href="#" data-auth="register">Konto erstellen</a></p>`;
+}
+
 function login() {
-  app.innerHTML = `
-    <main class="login-shell">
-      <section class="login-visual">
-        ${brand()}
-        <div class="login-quote">
-          <span class="eyebrow">Persönlich. Präzise. Energiegeladen.</span>
-          <h1>Dein Plan.<br><span class="gold">Dein Tempo.</span><br>Dein Erfolg.</h1>
-          <p>Individuelles Coaching von Sergio – überall an deiner Seite.</p>
-        </div>
-      </section>
-      <section class="login-panel">
-        <div class="login-form">
-          <span class="eyebrow">Interaktiver Prototyp</span>
-          <h2>Willkommen zurück</h2>
-          <p style="color:#666">Wähle eine Perspektive und entdecke die Maestro Plan App.</p>
-          <div class="role-picker" aria-label="Perspektive wählen">
-            <button class="role-card ${state.role==='client'?'active':''}" data-role="client"><strong>Als Kunde</strong><small>Training & Coaching</small></button>
-            <button class="role-card ${state.role==='trainer'?'active':''}" data-role="trainer"><strong>Als Sergio</strong><small>Trainer-Dashboard</small></button>
-          </div>
-          <div class="form-field"><label for="email">E-Mail</label><input id="email" value="${state.role==='client'?'anna@beispiel.de':'sergio@maestro-plan.de'}" /></div>
-          <div class="form-field"><label for="password">Passwort</label><input id="password" type="password" value="prototyp" /></div>
-          <button id="loginButton" class="btn btn-primary" style="width:100%;margin-top:12px">Demo starten →</button>
-          <p style="color:#777;font-size:.8rem;text-align:center;margin-top:18px">Demo-Daten · Keine echten Gesundheitsdaten</p>
-        </div>
-      </section>
-    </main>`;
+  // Reset-Link aus der URL (?token=…) öffnet direkt die Passwort-Setzen-Ansicht.
+  try {
+    const t = new URLSearchParams(location.search).get('token');
+    if (t && API.connected) { authMode = 'reset'; resetToken = t; }
+  } catch (err) { /* egal */ }
+
+  app.innerHTML = `<main class="login-shell">${loginVisual()}
+    <section class="login-panel"><div class="login-form">${authPanel()}</div></section></main>`;
+
   document.querySelectorAll('[data-role]').forEach(btn => btn.onclick = () => { state.role = btn.dataset.role; login(); });
-  document.querySelector('#loginButton').onclick = async () => {
-    if (API.connected) {
-      const btn = document.querySelector('#loginButton');
-      const email = document.querySelector('#email').value.trim();
-      const password = document.querySelector('#password').value;
+  document.querySelectorAll('[data-auth]').forEach(a => a.onclick = e => { e.preventDefault(); authMode = a.dataset.auth; login(); });
+
+  const withButton = (id, fn) => {
+    const btn = document.querySelector('#' + id);
+    if (!btn) return;
+    btn.onclick = async () => {
       const label = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Anmelden …';
-      try {
-        applyServerState(await API.login(email, password));
-        render();
-        startPolling();
-      } catch (err) {
-        toast((err && err.message) || 'Anmeldung fehlgeschlagen');
-        btn.disabled = false; btn.textContent = label;
-      }
-      return;
-    }
-    state.loggedIn = true; render();
+      btn.disabled = true; btn.textContent = 'Bitte warten …';
+      try { await fn(); }
+      catch (err) { toast((err && err.message) || 'Es ist ein Fehler aufgetreten'); btn.disabled = false; btn.textContent = label; }
+    };
   };
+
+  document.querySelector('#loginButton') && (document.querySelector('#loginButton').onclick = async () => {
+    if (!API.connected) { state.loggedIn = true; render(); return; }
+    const btn = document.querySelector('#loginButton');
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'Anmelden …';
+    try { applyServerState(await API.login(document.querySelector('#email').value.trim(), document.querySelector('#password').value)); render(); startPolling(); }
+    catch (err) { toast((err && err.message) || 'Anmeldung fehlgeschlagen'); btn.disabled = false; btn.textContent = label; }
+  });
+
+  withButton('registerButton', async () => {
+    applyServerState(await API.register(
+      document.querySelector('#regName').value.trim(),
+      document.querySelector('#regEmail').value.trim(),
+      document.querySelector('#regPassword').value
+    ));
+    render(); startPolling();
+  });
+
+  withButton('forgotButton', async () => {
+    const res = await API.forgotPassword(document.querySelector('#forgotEmail').value.trim());
+    if (res && res.devToken) { resetToken = res.devToken; authMode = 'reset'; login(); toast('Entwicklungsmodus: Reset-Link geöffnet'); }
+    else { authMode = 'login'; login(); toast('Falls ein Konto existiert, wurde ein Link gesendet.'); }
+  });
+
+  withButton('resetButton', async () => {
+    await API.resetPassword(resetToken, document.querySelector('#resetPassword').value);
+    resetToken = ''; authMode = 'login'; login();
+    toast('Passwort geändert – bitte neu anmelden.');
+  });
+
   saveState();
 }
 
 function mobileHeader(title='Heute') {
-  return `<header class="mobile-header">${brand(true)}<strong class="display">${title}</strong><button class="avatar" aria-label="Profil öffnen" data-view="more">AW</button></header>`;
+  return `<header class="mobile-header">${brand(true)}<strong class="display">${title}</strong><button class="avatar" aria-label="Profil öffnen" data-view="more">${escapeHtml(state.user.initials)}</button></header>`;
 }
 
 function bottomNav() {
@@ -248,7 +319,7 @@ function clientToday() {
     <main class="mobile-main">
       <section class="mobile-hero">
         <span class="eyebrow">Montag · 12. Juli</span>
-        <h1>Guten Morgen,<br><span class="gold">Anna.</span></h1>
+        <h1>Guten Morgen,<br><span class="gold">${escapeHtml(state.user.name.split(' ')[0])}.</span></h1>
         <p>Du bist stärker als deine Ausreden. Lass uns loslegen.</p>
       </section>
       <div class="row-between" style="margin:18px 0 10px"><div><span class="eyebrow">Deine Woche</span><h2 style="margin:2px 0">${p.sessionsDone} von ${p.sessionsGoal} Einheiten</h2></div><strong class="lime">${weekPct}%</strong></div>
@@ -326,7 +397,7 @@ function clientAppointments() {
 }
 
 function clientMore() {
-  return `${mobileHeader('Mehr')}<main class="mobile-main"><section class="card card-pad" style="margin-top:24px;text-align:center"><div class="avatar" style="width:76px;height:76px;margin:auto;font-size:1.3rem">AW</div><h2 style="margin:12px 0 0">Anna Weber</h2><span class="muted">Strong Start · seit 5 Wochen</span></section>
+  return `${mobileHeader('Mehr')}<main class="mobile-main"><section class="card card-pad" style="margin-top:24px;text-align:center"><div class="avatar" style="width:76px;height:76px;margin:auto;font-size:1.3rem">${escapeHtml(state.user.initials)}</div><h2 style="margin:12px 0 0">${escapeHtml(state.user.name)}</h2><span class="muted">Mein Coaching · Maestro Plan</span></section>
     <div class="grid-2" style="margin-top:18px"><button class="quick-action" data-modal="booking"><strong>📅 Termin buchen</strong><span class="muted">Persönlicher Check-in</span></button><button class="quick-action" data-modal="video"><strong>▶ Videothek</strong><span class="muted">Übungen & Wissen</span></button><button class="quick-action" data-modal="progress"><strong>↗ Fortschritt</strong><span class="muted">Werte & Fotos</span></button><button class="quick-action" data-modal="privacy"><strong>◇ Datenschutz</strong><span class="muted">Einwilligungen & Daten</span></button></div>
     <button id="logout" class="btn btn-ghost" style="width:100%;margin-top:22px">Demo verlassen</button>
   </main>${bottomNav()}`;

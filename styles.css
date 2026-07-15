@@ -273,6 +273,11 @@ p { line-height: 1.55; }
 /* Live-Feed neuer Check-ins im Trainer-Dashboard */
 .live-feed { border-left:3px solid var(--lime); }
 
+/* Auth-Umschalter (Anmelden / Registrieren / Passwort vergessen) */
+.auth-switch { text-align:center; margin-top:14px; font-size:.85rem; color:#777; }
+.auth-switch a { color:var(--gold-light); font-weight:600; text-decoration:none; }
+.auth-switch a:hover { text-decoration:underline; }
+
 /* Kunden-Auswahl im Trainer-Chat */
 .chat-chips { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 18px; }
 .chat-chip { display:inline-flex; align-items:center; gap:8px; padding:6px 14px 6px 6px; border-radius:999px; border:1px solid var(--line); background:#202224; color:#fff; cursor:pointer; font-weight:600; font-size:.9rem; }

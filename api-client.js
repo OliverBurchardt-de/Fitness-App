@@ -48,6 +48,13 @@
     API.token = data.token;
     return data.state;
   };
+  API.register = async function (name, email, password) {
+    const data = await request('POST', 'api/register', { name, email, password });
+    API.token = data.token;
+    return data.state;
+  };
+  API.forgotPassword = email => request('POST', 'api/password/forgot', { email });
+  API.resetPassword = (token, password) => request('POST', 'api/password/reset', { token, password });
   API.logout = async function () {
     try { await request('POST', 'api/logout'); } catch { /* trotzdem lokal abmelden */ }
     API.token = null;

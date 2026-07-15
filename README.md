@@ -47,6 +47,7 @@ Ohne erreichbaren Server läuft die App im Demo-Modus; auf dem Einstiegsbildschi
 ## Produktnahe Qualitätsmerkmale
 
 - **Echtes Backend (dependency-frei):** Node-Server mit Authentifizierung (scrypt-gehashte Passwörter, widerrufbare Session-Tokens), JSON-Datenschicht mit atomarem Schreiben und REST-API. Statisches Frontend und API laufen auf einem gemeinsamen Origin (kein CORS).
+- **Konten & Onboarding:** Selbst-Registrierung neuer Kunden (Validierung von Name, E-Mail-Format, Passwortstärke und Eindeutigkeit) und Passwort-Reset per Token. Die App wird auf den angemeldeten Nutzer personalisiert. (Der E-Mail-Versand des Reset-Links ist bewusst gestubbt/geloggt – siehe unten.)
 - **Mehrmandantenfähigkeit:** Ein Trainer betreut mehrere echte Kundenkonten; Daten sind pro Kunde isoliert (Kunde A sieht Kunde B nicht). Der Trainer chattet gezielt mit einem ausgewählten Kunden und sieht dessen echte Detaildaten.
 - **Geteilte Trainer-↔-Kunde-Daten:** Chat, Check-ins, Fortschritt und Termine liegen serverseitig; beide Rollen sehen denselben Stand. Sanftes Live-Polling hält die Ansichten aktuell, ohne Eingaben zu stören.
 - **Geschlossene Coaching-Loops:** Ein abgeschlossenes Training erhöht Wochenziel und Statistik und erscheint als Nachricht im Chat sowie im Trainer-Feed. Foto-Check-ins der Ernährung werden an Sergio gesendet. Eingetragene Wiederholungen/Gewichte werden gespeichert.
@@ -81,9 +82,17 @@ MARKTREIFE-AUDIT.md     Kritisches Audit gegen den Marktstandard
 Tests lokal ausführen:
 
 ```bash
-npm test        # 13 Tests (Auth, geteilte Daten, Foto-Upload, Sicherheit)
+npm test        # 20 Tests (Auth, Registrierung/Reset, Mehrmandanten, Foto, Sicherheit)
 npm run check   # Syntax-Check aller JS-Dateien
 ```
+
+## Konfiguration (Umgebungsvariablen)
+
+| Variable | Zweck |
+|----------|-------|
+| `PORT` / `HOST` | Server-Adresse (Default `127.0.0.1:4173`) |
+| `MAESTRO_DATA_DIR` | Ablageort der Laufzeitdaten (Default `./data`) |
+| `MAESTRO_DEV` | `=1` gibt den Passwort-Reset-Token in der API-Antwort zurück (nur Entwicklung/Tests; **niemals in Produktion**) |
 
 Die Laufzeitdaten des Servers liegen unter `data/db.json` (wird beim ersten Start aus Seed-Daten erzeugt und ist per `.gitignore` ausgenommen).
 
@@ -93,6 +102,8 @@ Die Laufzeitdaten des Servers liegen unter `data/db.json` (wird beim ersten Star
 |----------------|-------|
 | `GET /api/health` | Erreichbarkeitscheck (steuert den Connected Mode) |
 | `POST /api/login` · `POST /api/logout` | Anmeldung / Abmeldung |
+| `POST /api/register` | Selbst-Registrierung neuer Kunden |
+| `POST /api/password/forgot` · `/api/password/reset` | Passwort-Reset per Token |
 | `GET /api/state` | Geteilter Coaching-Zustand für den angemeldeten Nutzer |
 | `GET /api/clients/:id` | Kundendetail + Chat-Thread (nur Trainer, nur eigene Kunden) |
 | `POST /api/messages` | Chat-Nachricht senden (Trainer: an bestimmten Kunden) |

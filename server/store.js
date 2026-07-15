@@ -44,7 +44,8 @@ function seed() {
     appointments: {
       anna: { date: 'Dienstag, 14. Juli', time: '09:30', type: 'Persönlicher Video-Check-in', status: 'Bestätigt' },
       jonas: null, miriam: null, daniel: null
-    }
+    },
+    resets: {}
   };
 }
 
@@ -250,6 +251,52 @@ function setAppointment(user, appt) {
   return stateFor(user);
 }
 
+// --- Registrierung & Passwort-Reset --------------------------------------
+function initials(name) {
+  return String(name).trim().split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || 'NN';
+}
+
+function registerClient({ email, name, password }) {
+  // Eindeutige, URL-taugliche ID aus dem lokalen E-Mail-Teil ableiten.
+  const baseSlug = String(email).split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() || 'kunde';
+  let id = baseSlug;
+  let n = 1;
+  while (findUserById(id)) id = baseSlug + (++n);
+  const user = {
+    id, email: String(email).toLowerCase(), name: String(name).trim(), initials: initials(name),
+    role: 'client', trainerId: 'sergio', plan: 'Starter', status: 'Neu', alert: false, last: 'Gerade registriert',
+    passwordHash: hashPassword(password)
+  };
+  db.users.push(user);
+  db.progress[id] = { sessionsDone: 0, sessionsGoal: 3, totalSessions: 0, adherence: 0, performance: 0 };
+  db.appointments[id] = null;
+  persist();
+  return user;
+}
+
+// Erzeugt ein Reset-Token. Rückgabe null, wenn die E-Mail unbekannt ist –
+// der Aufrufer antwortet trotzdem neutral (kein Konto-Enumeration-Leak).
+function createResetToken(email) {
+  const u = findUserByEmail(email);
+  if (!u) return null;
+  const token = createToken();
+  db.resets = db.resets || {};
+  db.resets[token] = { userId: u.id, createdAt: Date.now() };
+  persist();
+  return token;
+}
+
+function resetPassword(token, newPassword) {
+  const rec = (db.resets || {})[token];
+  if (!rec || (Date.now() - rec.createdAt) > 1000 * 60 * 60) throw httpError(400, 'Ungültiger oder abgelaufener Link');
+  const u = findUserById(rec.userId);
+  if (!u) throw httpError(400, 'Ungültiger Link');
+  u.passwordHash = hashPassword(newPassword);
+  delete db.resets[token];
+  persist();
+  return u;
+}
+
 function httpError(status, message) {
   const err = new Error(message);
   err.status = status;
@@ -262,5 +309,6 @@ module.exports = {
   createSession, destroySession, userForToken,
   publicUser, stateFor, clientDetail,
   addMessage, addCheckin, patchProgress, setAppointment,
+  registerClient, createResetToken, resetPassword,
   httpError, DB_FILE, UPLOADS_DIR
 };

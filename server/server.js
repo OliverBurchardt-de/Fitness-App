@@ -118,6 +118,39 @@ async function handleApi(req, res, pathname) {
     return sendJson(res, 200, { token, state: store.stateFor(user) });
   }
 
+  if (pathname === '/api/register' && method === 'POST') {
+    checkLoginRate(req);
+    const { email, name, password } = await readBody(req);
+    const emailOk = typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!emailOk || typeof name !== 'string' || name.trim().length < 2) {
+      recordLoginFailure(req); throw store.httpError(400, 'Bitte gültigen Namen und eine E-Mail-Adresse angeben');
+    }
+    if (typeof password !== 'string' || password.length < 8) {
+      recordLoginFailure(req); throw store.httpError(400, 'Passwort muss mindestens 8 Zeichen haben');
+    }
+    if (store.findUserByEmail(email)) throw store.httpError(409, 'Für diese E-Mail existiert bereits ein Konto');
+    const user = store.registerClient({ email, name, password });
+    const token = store.createSession(user.id);
+    return sendJson(res, 201, { token, state: store.stateFor(user) });
+  }
+
+  if (pathname === '/api/password/forgot' && method === 'POST') {
+    const { email } = await readBody(req);
+    const token = store.createResetToken(email || '');
+    // In Produktion geht der Link per E-Mail raus (hier bewusst nur geloggt/gestubbt).
+    if (token) console.log(`[Passwort-Reset] Link für ${email}: /reset?token=${token}`);
+    const body = { ok: true }; // immer neutral antworten (keine Konto-Enumeration)
+    if (process.env.MAESTRO_DEV === '1' && token) body.devToken = token;
+    return sendJson(res, 200, body);
+  }
+
+  if (pathname === '/api/password/reset' && method === 'POST') {
+    const { token, password } = await readBody(req);
+    if (typeof password !== 'string' || password.length < 8) throw store.httpError(400, 'Passwort muss mindestens 8 Zeichen haben');
+    store.resetPassword(token, password);
+    return sendJson(res, 200, { ok: true });
+  }
+
   if (pathname === '/api/logout' && method === 'POST') {
     const token = bearer(req);
     if (token) store.destroySession(token);
