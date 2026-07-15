@@ -53,7 +53,8 @@
     API.token = null;
   };
   API.getState = () => request('GET', 'api/state');
-  API.postMessage = text => request('POST', 'api/messages', { text });
+  API.getClient = id => request('GET', 'api/clients/' + encodeURIComponent(id));
+  API.postMessage = (text, to) => request('POST', 'api/messages', { text, to });
   API.postCheckin = entry => request('POST', 'api/checkins', entry);
   API.patchProgress = patch => request('PATCH', 'api/progress', patch);
   API.putAppointment = appt => request('PUT', 'api/appointment', appt);

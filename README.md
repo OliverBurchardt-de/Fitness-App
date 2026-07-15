@@ -22,10 +22,13 @@ Die App im Browser öffnen und mit den Seed-Konten anmelden:
 
 | Rolle | E-Mail | Passwort |
 |-------|--------|----------|
-| Kundin | `anna@beispiel.de` | `prototyp` |
 | Trainer | `sergio@maestro-plan.de` | `prototyp` |
+| Kundin | `anna@beispiel.de` | `prototyp` |
+| Kunde | `jonas@beispiel.de` | `prototyp` |
+| Kundin | `miriam@beispiel.de` | `prototyp` |
+| Kunde | `daniel@beispiel.de` | `prototyp` |
 
-Zwei Fenster/Geräte gleichzeitig zeigen den Live-Sync: Ein Check-in der Kundin erscheint sofort im Trainer-Dashboard, eine Antwort des Trainers landet direkt im Kunden-Chat.
+Der Trainer betreut **mehrere echte Kundenkonten** mit jeweils eigenem Fortschritt, Chat, Terminen und Check-ins. Zwei Fenster/Geräte gleichzeitig zeigen den Live-Sync: Ein Check-in einer Kundin erscheint sofort im Trainer-Dashboard, eine Antwort des Trainers landet direkt im Chat des jeweiligen Kunden – und ist für andere Kunden nicht sichtbar.
 
 ### Nur als Demo (ohne Backend)
 
@@ -44,6 +47,7 @@ Ohne erreichbaren Server läuft die App im Demo-Modus; auf dem Einstiegsbildschi
 ## Produktnahe Qualitätsmerkmale
 
 - **Echtes Backend (dependency-frei):** Node-Server mit Authentifizierung (scrypt-gehashte Passwörter, widerrufbare Session-Tokens), JSON-Datenschicht mit atomarem Schreiben und REST-API. Statisches Frontend und API laufen auf einem gemeinsamen Origin (kein CORS).
+- **Mehrmandantenfähigkeit:** Ein Trainer betreut mehrere echte Kundenkonten; Daten sind pro Kunde isoliert (Kunde A sieht Kunde B nicht). Der Trainer chattet gezielt mit einem ausgewählten Kunden und sieht dessen echte Detaildaten.
 - **Geteilte Trainer-↔-Kunde-Daten:** Chat, Check-ins, Fortschritt und Termine liegen serverseitig; beide Rollen sehen denselben Stand. Sanftes Live-Polling hält die Ansichten aktuell, ohne Eingaben zu stören.
 - **Geschlossene Coaching-Loops:** Ein abgeschlossenes Training erhöht Wochenziel und Statistik und erscheint als Nachricht im Chat sowie im Trainer-Feed. Foto-Check-ins der Ernährung werden an Sergio gesendet. Eingetragene Wiederholungen/Gewichte werden gespeichert.
 - **Persistenz & Offline:** Im Connected Mode über den Server, im Demo-Modus über `localStorage`. Wer eingeloggt war, landet direkt wieder in der App.
@@ -90,7 +94,8 @@ Die Laufzeitdaten des Servers liegen unter `data/db.json` (wird beim ersten Star
 | `GET /api/health` | Erreichbarkeitscheck (steuert den Connected Mode) |
 | `POST /api/login` · `POST /api/logout` | Anmeldung / Abmeldung |
 | `GET /api/state` | Geteilter Coaching-Zustand für den angemeldeten Nutzer |
-| `POST /api/messages` | Chat-Nachricht senden |
+| `GET /api/clients/:id` | Kundendetail + Chat-Thread (nur Trainer, nur eigene Kunden) |
+| `POST /api/messages` | Chat-Nachricht senden (Trainer: an bestimmten Kunden) |
 | `POST /api/checkins` | Trainings-/Ernährungs-Check-in |
 | `PATCH /api/progress` | Fortschritt aktualisieren |
 | `PUT`/`DELETE /api/appointment` | Termin buchen / absagen |

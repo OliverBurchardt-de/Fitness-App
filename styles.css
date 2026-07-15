@@ -272,3 +272,9 @@ p { line-height: 1.55; }
 
 /* Live-Feed neuer Check-ins im Trainer-Dashboard */
 .live-feed { border-left:3px solid var(--lime); }
+
+/* Kunden-Auswahl im Trainer-Chat */
+.chat-chips { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 18px; }
+.chat-chip { display:inline-flex; align-items:center; gap:8px; padding:6px 14px 6px 6px; border-radius:999px; border:1px solid var(--line); background:#202224; color:#fff; cursor:pointer; font-weight:600; font-size:.9rem; }
+.chat-chip .avatar { width:28px; height:28px; font-size:.7rem; }
+.chat-chip.active { border-color:var(--gold); background:rgba(189,155,83,.16); color:var(--gold-light); }

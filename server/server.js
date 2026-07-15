@@ -71,18 +71,27 @@ function bearer(req) {
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
 
-// Einfaches In-Memory-Rate-Limit gegen Brute-Force am Login.
+// In-Memory-Rate-Limit gegen Brute-Force: es zählen nur FEHLversuche pro IP,
+// ein erfolgreicher Login setzt den Zähler zurück (kein Aussperren legitimer
+// Nutzer hinter geteilten IPs/NAT).
 const loginAttempts = new Map();
 const RL_WINDOW = 5 * 60 * 1000;
 const RL_MAX = 8;
-function rateLimitLogin(req) {
-  const ip = req.socket.remoteAddress || 'unknown';
+const clientIp = req => req.socket.remoteAddress || 'unknown';
+function checkLoginRate(req) {
+  const rec = loginAttempts.get(clientIp(req));
+  if (rec && Date.now() <= rec.resetAt && rec.count >= RL_MAX) {
+    throw store.httpError(429, 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.');
+  }
+}
+function recordLoginFailure(req) {
+  const ip = clientIp(req);
   const now = Date.now();
   const rec = loginAttempts.get(ip);
-  if (!rec || now > rec.resetAt) { loginAttempts.set(ip, { count: 1, resetAt: now + RL_WINDOW }); return; }
-  rec.count += 1;
-  if (rec.count > RL_MAX) throw store.httpError(429, 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.');
+  if (!rec || now > rec.resetAt) loginAttempts.set(ip, { count: 1, resetAt: now + RL_WINDOW });
+  else rec.count += 1;
 }
+function recordLoginSuccess(req) { loginAttempts.delete(clientIp(req)); }
 function requireUser(req) {
   const user = store.userForToken(bearer(req));
   if (!user) throw store.httpError(401, 'Nicht angemeldet');
@@ -97,12 +106,14 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === '/api/login' && method === 'POST') {
-    rateLimitLogin(req);
+    checkLoginRate(req);
     const { email, password } = await readBody(req);
     const user = store.findUserByEmail(email || '');
     if (!user || !verifyPassword(password || '', user.passwordHash)) {
+      recordLoginFailure(req);
       throw store.httpError(401, 'E-Mail oder Passwort ist falsch');
     }
+    recordLoginSuccess(req);
     const token = store.createSession(user.id);
     return sendJson(res, 200, { token, state: store.stateFor(user) });
   }
@@ -119,8 +130,15 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/messages' && method === 'POST') {
     const user = requireUser(req);
-    const { text } = await readBody(req);
-    return sendJson(res, 201, store.addMessage(user, text));
+    const { text, to } = await readBody(req);
+    return sendJson(res, 201, store.addMessage(user, text, to));
+  }
+
+  const clientMatch = pathname.match(/^\/api\/clients\/([A-Za-z0-9_-]+)$/);
+  if (clientMatch && method === 'GET') {
+    const user = requireUser(req);
+    if (user.role !== 'trainer') throw store.httpError(403, 'Nur für Trainer');
+    return sendJson(res, 200, store.clientDetail(user, clientMatch[1]));
   }
 
   if (pathname === '/api/checkins' && method === 'POST') {

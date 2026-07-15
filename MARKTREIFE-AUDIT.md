@@ -9,7 +9,7 @@
 
 **Nein – wir sind noch nicht auf dem Niveau „ganz groß".** Was existiert, ist ein **exzellenter Prototyp mit einem echten, aber minimalen Backend-Fundament**. Der Sprung von hier zu einer marktführenden App ist **größer als der bisher zurückgelegte Weg** – und die schwierigen 70–80 % (Compliance, Zahlungen, echte Infrastruktur, Mehrmandantenfähigkeit, Echtzeit, native Apps, Sicherheit auf Produktionsniveau) sind **weitgehend unangetastet**.
 
-**Realistische Marktreife: ≈ 25–30 %.** (Meine frühere „50 %"-Angabe war zu optimistisch – sie maß den Weg zum MVP, nicht zum Marktstandard.)
+**Realistische Marktreife: ≈ 30–35 %** (nach Umsetzung der Mehrmandantenfähigkeit; ursprünglich als 25–30 % bewertet). Meine noch frühere „50 %"-Angabe war zu optimistisch – sie maß den Weg zum MVP, nicht zum Marktstandard.
 
 ### Zwei Dinge, die ich zu positiv dargestellt hatte – jetzt klar benannt
 
@@ -24,9 +24,11 @@ Beim Gegenprüfen fiel eine **echte Sicherheitslücke** auf, die sofort geschlos
 - ✅ **Mahlzeitenfoto wird jetzt wirklich übertragen:** Bild-Upload (Typ-/Größenprüfung, serverseitiger Dateiname), Abruf über `/uploads/…`, Thumbnail im Trainer-Feed. Ende-zu-Ende im Browser verifiziert.
 - ✅ **Security-Header** (CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) auf allen Antworten.
 - ✅ **Login-Rate-Limiting** (Brute-Force-Schutz) und **Session-Aufräumen** (kein Ansammeln toter Tokens).
-- ✅ **Automatisierte Tests + CI:** 13 Tests (Auth, geteilte Daten, Foto-Upload, Security-Header, blockierte interne Pfade, Rate-Limit) mit Node-Test-Runner; GitHub-Actions-Pipeline.
+- ✅ **Automatisierte Tests + CI:** 16 Tests (Auth, geteilte Daten, **Mehrmandantenfähigkeit**, Foto-Upload, Security-Header, blockierte interne Pfade, Rate-Limit) mit Node-Test-Runner; GitHub-Actions-Pipeline.
+- ✅ **Echte Mehrmandantenfähigkeit (🔴 → ✅):** Der Trainer betreut jetzt **mehrere echte Kundenkonten** mit pro Kunde isolierten Daten (Fortschritt, Chat, Check-ins, Termine); gezielter Chat je Kunde und echte Kundendetail-Ansicht. Die harte `'anna'`-Verdrahtung ist entfernt. Per API- und Browser-Tests abgesichert (Isolation verifiziert: Kunde A sieht Kunde B nicht).
+- ✅ **Rate-Limit korrigiert:** zählt nur Fehlversuche und sperrt keine legitimen Nutzer hinter geteilten IPs aus.
 
-Die Kategorientabellen unten zeigen weiterhin den **ursprünglichen** Prüfstand; die obigen Punkte sind damit teilweise bereits abgehakt. **Weiterhin offen** bleiben v. a. echte Datenbank, Mehrmandantenfähigkeit, DSGVO, Zahlungen, echte Video-Calls, native Apps.
+Die Kategorientabellen unten zeigen weiterhin den **ursprünglichen** Prüfstand; die obigen Punkte sind damit teilweise bereits abgehakt. **Weiterhin offen** bleiben v. a. echte Datenbank, DSGVO, Zahlungen, echte Video-Calls, Registrierung/Onboarding, native Apps.
 
 ---
 

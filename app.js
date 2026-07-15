@@ -31,7 +31,10 @@ const state = {
     { name:'Daniel Vogt', initials:'DV', plan:'Back in Motion', adherence:58, status:'Training verpasst', alert:true, last:'Vor 4 Tagen' }
   ],
   progress: { sessionsDone: 2, sessionsGoal: 3, totalSessions: 8, adherence: 86, performance: 12 },
-  checkins: []
+  checkins: [],
+  adminChatClientId: null,
+  adminThread: [],
+  adminThreadFor: null
 };
 
 // --- Persistenz -----------------------------------------------------------
@@ -74,7 +77,7 @@ function applyServerState(s) {
   if (s.user && s.user.role) state.role = s.user.role;
   state.loggedIn = true;
   if (Array.isArray(s.messages)) state.messages = s.messages.map(m => ({ mine: !!m.mine, from: m.from, text: m.text, time: m.time }));
-  if (Array.isArray(s.checkins)) state.checkins = s.checkins.map(c => ({ type: c.type, client: c.client, label: c.label, note: c.note, time: c.time, photoUrl: c.photoUrl }));
+  if (Array.isArray(s.checkins)) state.checkins = s.checkins.map(c => ({ type: c.type, client: c.client, clientId: c.clientId, label: c.label, note: c.note, time: c.time, photoUrl: c.photoUrl }));
   if (s.progress) state.progress = s.progress;
   state.appointment = s.appointment || null;
   if (Array.isArray(s.clients)) state.clients = s.clients;
@@ -108,10 +111,17 @@ function startPolling() {
     if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
     try {
       const s = await API.getState();
-      const before = JSON.stringify([state.messages, state.checkins, state.progress, state.appointment]);
+      const before = JSON.stringify([state.messages, state.checkins, state.progress, state.appointment, state.clients]);
       applyServerState(s);
-      const after = JSON.stringify([state.messages, state.checkins, state.progress, state.appointment]);
-      if (before !== after) { state.role === 'client' ? renderClient() : renderAdmin(); }
+      const after = JSON.stringify([state.messages, state.checkins, state.progress, state.appointment, state.clients]);
+      let changed = before !== after;
+      // Offener Trainer-Chat: neuen Nachrichten-Thread des gewählten Kunden holen.
+      if (state.role === 'trainer' && state.adminView === 'chat' && state.adminChatClientId) {
+        const d = await API.getClient(state.adminChatClientId);
+        const nt = (d.messages || []).map(m => ({ mine: m.mine, from: m.from, text: m.text, time: m.time }));
+        if (JSON.stringify(nt) !== JSON.stringify(state.adminThread)) { state.adminThread = nt; state.adminThreadFor = state.adminChatClientId; changed = true; }
+      }
+      if (changed) { state.role === 'client' ? renderClient() : renderAdmin(); }
     } catch (err) { if (err && err.status === 401) API.connected = false; }
   }, 4000);
 }
@@ -490,7 +500,7 @@ function adminShell(content,title,view=state.adminView) {
 
 function adminDashboard() {
   const openCheckins = 7 + state.checkins.length;
-  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${escapeHtml((c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><strong>${escapeHtml(c.client)} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${escapeHtml(c.label)}${c.note?` – „${escapeHtml(c.note)}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center">${c.photoUrl?`<img src="${escapeHtml(c.photoUrl)}" alt="Mahlzeitenfoto von ${escapeHtml(c.client)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover">`:''}<small class="muted">${escapeHtml(c.time)}</small><button class="btn btn-ghost btn-small" data-admin="chat">Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
+  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${escapeHtml((c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><strong>${escapeHtml(c.client)} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${escapeHtml(c.label)}${c.note?` – „${escapeHtml(c.note)}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center">${c.photoUrl?`<img src="${escapeHtml(c.photoUrl)}" alt="Mahlzeitenfoto von ${escapeHtml(c.client)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover">`:''}<small class="muted">${escapeHtml(c.time)}</small><button class="btn btn-ghost btn-small" ${c.clientId?`data-feed-client="${escapeHtml(c.clientId)}"`:'data-admin="chat"'}>Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
   return adminShell(`<div class="row-between"><div><span class="eyebrow">Montag, 12. Juli</span><h1 style="font-size:2.8rem;margin:4px 0">Guten Morgen, Sergio.</h1><p style="color:#666">Vier Kunden brauchen heute deine Aufmerksamkeit.</p></div><button class="btn btn-primary" data-admin="plans">＋ Plan erstellen</button></div>
   <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>${openCheckins}</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><button class="btn btn-ghost btn-small" data-admin="appointments">Nächster: 11:30 →</button></div></section>
   ${liveFeed}
@@ -518,14 +528,41 @@ function adminPlans() {
 function exerciseBuilderRow(e,i){ return `<div class="exercise-row"><span class="muted">☷</span><div><strong>${e.name}</strong><small class="muted" style="display:block">Pause: ${e.rest}</small></div><input value="3 Sätze" aria-label="Sätze ${e.name}"><input value="${e.target.split('×')[1]?.trim()||e.target}" aria-label="Ziel ${e.name}"><button class="icon-btn remove-exercise" data-remove="${i}" aria-label="Übung entfernen">×</button></div>`; }
 
 function adminChat() {
-  const clientMsgs = state.messages.filter(m => !m.mine).length;
-  const thread = state.messages.length
-    ? state.messages.map(m=>`<div class="message ${m.mine?'mine':''}">${escapeHtml(m.text)}<small>${escapeHtml(m.time)}</small></div>`).join('')
-    : '<p class="muted">Noch keine Nachrichten.</p>';
-  return adminShell(`<div class="row-between"><div><span class="eyebrow">Persönlicher Kundenaustausch</span><h1 style="font-size:2.8rem">Nachrichten</h1></div><span class="tag ${clientMsgs?'green':''}">${clientMsgs} von Anna</span></div>
-  <div class="card card-pad"><div class="row" style="margin-bottom:16px"><div class="avatar">AW</div><div><strong>Anna Weber</strong><small class="muted" style="display:block"><span class="status-dot"></span>Strong Start · Woche 3</small></div></div>
+  // Demo-/Offline-Modus: einzelner lokaler Thread (state.messages).
+  if (!API.connected) {
+    const thread = state.messages.length
+      ? state.messages.map(m=>`<div class="message ${m.mine?'mine':''}">${escapeHtml(m.text)}<small>${escapeHtml(m.time)}</small></div>`).join('')
+      : '<p class="muted">Noch keine Nachrichten.</p>';
+    return adminShell(`<div class="row-between"><div><span class="eyebrow">Persönlicher Kundenaustausch</span><h1 style="font-size:2.8rem">Nachrichten</h1></div></div>
+    <div class="card card-pad"><div class="row" style="margin-bottom:16px"><div class="avatar">AW</div><div><strong>Anna Weber</strong><small class="muted" style="display:block"><span class="status-dot"></span>Strong Start · Woche 3</small></div></div>
+    <div class="chat-list">${thread}</div>
+    <form id="adminChatForm" class="row" style="margin-top:18px;gap:10px"><input id="adminChatInput" aria-label="Nachricht an Anna" placeholder="Antwort an Anna …" style="flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#202224;color:#fff"><button class="btn btn-primary" type="submit">Senden</button></form></div>`, 'Nachrichten','chat');
+  }
+  // Connected Mode: echter Mehr-Kunden-Chat.
+  const clients = state.clients || [];
+  if (!state.adminChatClientId && clients.length) state.adminChatClientId = clients[0].id;
+  const active = clients.find(c => c.id === state.adminChatClientId);
+  const chips = clients.map(c => `<button class="chat-chip ${c.id===state.adminChatClientId?'active':''}" data-chat-client="${escapeHtml(c.id)}"><span class="avatar">${escapeHtml(c.initials)}</span>${escapeHtml(c.name.split(' ')[0])}</button>`).join('');
+  const thread = state.adminThread.length
+    ? state.adminThread.map(m=>`<div class="message ${m.mine?'mine':''}">${escapeHtml(m.text)}<small>${escapeHtml(m.time)}</small></div>`).join('')
+    : '<p class="muted">Noch keine Nachrichten mit diesem Kunden.</p>';
+  return adminShell(`<div class="row-between"><div><span class="eyebrow">Persönlicher Kundenaustausch</span><h1 style="font-size:2.8rem">Nachrichten</h1></div></div>
+  <div class="chat-chips">${chips || '<span class="muted">Keine Kunden</span>'}</div>
+  <div class="card card-pad">${active?`<div class="row" style="margin-bottom:16px"><div class="avatar">${escapeHtml(active.initials)}</div><div><strong>${escapeHtml(active.name)}</strong><small class="muted" style="display:block"><span class="status-dot ${active.alert?'warn':''}"></span>${escapeHtml(active.plan)}</small></div></div>
   <div class="chat-list">${thread}</div>
-  <form id="adminChatForm" class="row" style="margin-top:18px;gap:10px"><input id="adminChatInput" aria-label="Nachricht an Anna" placeholder="Antwort an Anna …" style="flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#202224;color:#fff"><button class="btn btn-primary" type="submit">Senden</button></form></div>`, 'Nachrichten','chat');
+  <form id="adminChatForm" class="row" style="margin-top:18px;gap:10px"><input id="adminChatInput" aria-label="Nachricht an ${escapeHtml(active.name)}" placeholder="Antwort an ${escapeHtml(active.name.split(' ')[0])} …" style="flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#202224;color:#fff"><button class="btn btn-primary" type="submit">Senden</button></form>`:'<p class="muted">Kein Kunde ausgewählt.</p>'}</div>`, 'Nachrichten','chat');
+}
+
+// Lädt den Chat-Thread des ausgewählten Kunden (Connected Mode).
+async function loadAdminThread(force) {
+  if (!API.connected || !state.adminChatClientId) return;
+  if (!force && state.adminThreadFor === state.adminChatClientId) return;
+  try {
+    const d = await API.getClient(state.adminChatClientId);
+    state.adminThread = (d.messages || []).map(m => ({ mine: m.mine, from: m.from, text: m.text, time: m.time }));
+    state.adminThreadFor = state.adminChatClientId;
+    if (state.adminView === 'chat') renderAdmin();
+  } catch (err) { /* stumm – nächster Versuch beim nächsten Render */ }
 }
 
 function adminGeneric(view) {
@@ -549,22 +586,68 @@ function renderAdmin() {
   document.querySelector('#assignPlan')?.addEventListener('click',()=>toast('Full Body Power wurde Anna zugewiesen'));
   document.querySelector('#addExercise')?.addEventListener('click',()=>{state.exercises.push({name:'Mountain Climbers',target:'3 × 30 Sek.',rest:'45 Sek.',unit:'Sek.',values:[30,30,30],weight:[0,0,0],duration:true});renderAdmin();toast('Übung hinzugefügt');});
   document.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{state.exercises.splice(Number(btn.dataset.remove),1);renderAdmin();});
+  document.querySelectorAll('[data-chat-client]').forEach(btn=>btn.onclick=()=>{
+    state.adminChatClientId=btn.dataset.chatClient;
+    state.adminThread=[]; state.adminThreadFor=null;
+    renderAdmin();
+    loadAdminThread(true);
+  });
+  document.querySelectorAll('[data-feed-client]').forEach(btn=>btn.onclick=()=>{
+    state.adminChatClientId=btn.dataset.feedClient;
+    state.adminThread=[]; state.adminThreadFor=null;
+    state.adminView='chat';
+    renderAdmin();
+    loadAdminThread(true);
+  });
   document.querySelector('#adminChatForm')?.addEventListener('submit',e=>{
     e.preventDefault();
     const input=document.querySelector('#adminChatInput');
     const text=input.value.trim();
     if(!text) return;
-    state.messages.push({mine:true, from:'sergio', text, time:'Jetzt'});
     input.value='';
-    renderAdmin();
-    if (API.connected) syncState(API.postMessage(text)).then(()=>renderAdmin());
+    if (API.connected) {
+      const to=state.adminChatClientId;
+      state.adminThread.push({mine:true, from:'sergio', text, time:'Jetzt'});
+      renderAdmin();
+      API.getClient ? API.postMessage(text, to).then(d=>{
+        state.adminThread=(d.messages||[]).map(m=>({mine:m.mine,from:m.from,text:m.text,time:m.time}));
+        state.adminThreadFor=to;
+        renderAdmin();
+      }).catch(()=>toast('Nachricht konnte nicht gesendet werden')) : null;
+    } else {
+      state.messages.push({mine:true, from:'sergio', text, time:'Jetzt'});
+      renderAdmin();
+    }
   });
+  // Beim Betreten der Chat-Ansicht den Thread des ausgewählten Kunden nachladen.
+  if (state.adminView==='chat' && API.connected && state.adminThreadFor!==state.adminChatClientId) loadAdminThread(false);
 }
 
 function showClientDetail(c) {
-  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between"><div class="row"><div class="avatar">${c.initials}</div><div><h2 style="margin:0">${c.name}</h2><span class="muted">${c.plan}</span></div></div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div><div class="grid-3" style="margin:24px 0"><div><strong class="gold">${c.adherence}%</strong><small class="muted" style="display:block">Trainingsquote</small></div><div><strong class="gold">8</strong><small class="muted" style="display:block">Einheiten</small></div><div><strong class="gold">+12%</strong><small class="muted" style="display:block">Leistung</small></div></div><div class="chart">${[40,48,52,60,58,68,76,c.adherence].map(v=>`<div class="bar" style="height:${v}%"></div>`).join('')}</div><div class="grid-3" style="margin-top:30px"><button class="btn btn-dark">Plan anpassen</button><button class="btn btn-dark">Nachricht</button><button class="btn btn-primary">Termin</button></div></div></div>`);
+  if (API.connected && c.id) {
+    API.getClient(c.id).then(d => renderClientDetailModal(c, d)).catch(() => renderClientDetailModal(c, null));
+  } else {
+    renderClientDetailModal(c, null);
+  }
+}
+
+function renderClientDetailModal(c, detail) {
+  const p = detail?.progress || { totalSessions: 8, adherence: c.adherence ?? 0, performance: 12 };
+  const recent = (detail?.checkins || []).slice(0, 4);
+  const recentHtml = recent.length
+    ? `<div class="stack" style="margin-top:20px">${recent.map(ci=>`<div class="row-between"><div><strong>${ci.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${escapeHtml(ci.label)}</small></div><small class="muted">${escapeHtml(ci.time)}</small></div>`).join('')}</div>`
+    : (detail ? '<p class="muted" style="margin-top:20px">Noch keine Check-ins.</p>' : '');
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop"><div class="modal"><div class="row-between"><div class="row"><div class="avatar">${escapeHtml(c.initials)}</div><div><h2 style="margin:0">${escapeHtml(c.name)}</h2><span class="muted">${escapeHtml(c.plan)}</span></div></div><button class="icon-btn close-modal" aria-label="Schließen">×</button></div><div class="grid-3" style="margin:24px 0"><div><strong class="gold">${p.adherence}%</strong><small class="muted" style="display:block">Trainingsquote</small></div><div><strong class="gold">${p.totalSessions}</strong><small class="muted" style="display:block">Einheiten</small></div><div><strong class="gold">+${p.performance}%</strong><small class="muted" style="display:block">Leistung</small></div></div><div class="chart">${[40,48,52,60,58,68,76,p.adherence].map(v=>`<div class="bar" style="height:${v}%"></div>`).join('')}</div>${recentHtml}<div class="grid-3" style="margin-top:30px"><button class="btn btn-dark">Plan anpassen</button><button class="btn btn-dark" data-open-chat="${escapeHtml(c.id||'')}">Nachricht</button><button class="btn btn-primary">Termin</button></div></div></div>`);
   enhanceModal(document.body.lastElementChild);
   document.querySelector('.close-modal').onclick=()=>document.querySelector('.modal-backdrop').remove();
+  document.querySelector('[data-open-chat]')?.addEventListener('click', e=>{
+    const id=e.currentTarget.dataset.openChat;
+    document.querySelector('.modal-backdrop')?.remove();
+    if (id) { state.adminChatClientId=id; state.adminThread=[]; state.adminThreadFor=null; }
+    state.adminView='chat';
+    renderAdmin();
+    loadAdminThread(true);
+  });
 }
 
 function showAdminModal(title,text){

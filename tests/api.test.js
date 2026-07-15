@@ -96,6 +96,60 @@ test('SICHERHEIT: interne Pfade werden nicht ausgeliefert', async () => {
   }
 });
 
+test('Mehrmandantenfähigkeit: Kundendaten sind isoliert', async () => {
+  const anna = await (await login('anna@beispiel.de', 'prototyp')).json();
+  const jonas = await (await login('jonas@beispiel.de', 'prototyp')).json();
+  assert.strictEqual(anna.state.user.id, 'anna');
+  assert.strictEqual(jonas.state.user.id, 'jonas');
+  // Annas Thread darf Jonas' Nachrichten nicht enthalten
+  const annaTexts = anna.state.messages.map(m => m.text).join(' ');
+  assert.ok(!/meinen Plan nochmal/.test(annaTexts), 'Anna sieht Jonas-Nachricht nicht');
+  // Fortschritt ist pro Kunde unterschiedlich
+  assert.notStrictEqual(anna.state.progress.totalSessions, jonas.state.progress.totalSessions);
+});
+
+test('Trainer sieht echten Kunden-Roster und Detail je Kunde', async () => {
+  const sergio = await (await login('sergio@maestro-plan.de', 'prototyp')).json();
+  const auth = { Authorization: 'Bearer ' + sergio.token };
+  const roster = sergio.state.clients.map(c => c.id).sort();
+  assert.deepStrictEqual(roster, ['anna', 'daniel', 'jonas', 'miriam']);
+
+  const detail = await (await api('/api/clients/jonas', { headers: auth })).json();
+  assert.strictEqual(detail.client.id, 'jonas');
+  assert.ok(detail.messages.some(m => /meinen Plan nochmal/.test(m.text)), 'Detail enthält Jonas-Thread');
+
+  // Kunde darf die Trainer-Detailroute nicht nutzen
+  const anna = await (await login('anna@beispiel.de', 'prototyp')).json();
+  const forbidden = await api('/api/clients/jonas', { headers: { Authorization: 'Bearer ' + anna.token } });
+  assert.strictEqual(forbidden.status, 403);
+});
+
+test('Trainer chattet gezielt mit einem bestimmten Kunden', async () => {
+  const sergio = await (await login('sergio@maestro-plan.de', 'prototyp')).json();
+  const post = await api('/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sergio.token },
+    body: JSON.stringify({ to: 'miriam', text: 'Super Woche, Miriam!' })
+  });
+  assert.strictEqual(post.status, 201);
+  const detail = await post.json();
+  assert.ok(detail.messages.some(m => m.text === 'Super Woche, Miriam!'));
+
+  // Miriam sieht die Nachricht, Jonas nicht
+  const miriam = await (await login('miriam@beispiel.de', 'prototyp')).json();
+  assert.ok(miriam.state.messages.some(m => m.text === 'Super Woche, Miriam!'));
+  const jonas = await (await login('jonas@beispiel.de', 'prototyp')).json();
+  assert.ok(!jonas.state.messages.some(m => m.text === 'Super Woche, Miriam!'));
+
+  // Empfänger muss ein eigener Kunde sein
+  const bad = await api('/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sergio.token },
+    body: JSON.stringify({ to: 'sergio', text: 'x' })
+  });
+  assert.strictEqual(bad.status, 400);
+});
+
 test('Rate-Limiting greift nach vielen Fehlversuchen', async () => {
   let hit429 = false;
   for (let i = 0; i < 12; i++) {
