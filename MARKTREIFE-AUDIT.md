@@ -9,7 +9,7 @@
 
 **Nein – wir sind noch nicht auf dem Niveau „ganz groß".** Was existiert, ist ein **exzellenter Prototyp mit einem echten, aber minimalen Backend-Fundament**. Der Sprung von hier zu einer marktführenden App ist **größer als der bisher zurückgelegte Weg** – und die schwierigen 70–80 % (Compliance, Zahlungen, echte Infrastruktur, Mehrmandantenfähigkeit, Echtzeit, native Apps, Sicherheit auf Produktionsniveau) sind **weitgehend unangetastet**.
 
-**Realistische Marktreife: ≈ 30–35 %** (nach Umsetzung der Mehrmandantenfähigkeit; ursprünglich als 25–30 % bewertet). Meine noch frühere „50 %"-Angabe war zu optimistisch – sie maß den Weg zum MVP, nicht zum Marktstandard.
+**Realistische Marktreife: ≈ 40 %** (nach Mehrmandantenfähigkeit, Onboarding und DSGVO-Selbstbedienung; ursprünglich als 25–30 % bewertet). Als **funktionierender Coaching-MVP** ist die App damit konkurrenzfähig; bis **marktführend** fehlen weiterhin die kapitalintensiven Pflichtteile, die externe Dienste und Geschäftsentscheidungen brauchen (echte DB-Engine, Zahlungen, echte Video-Calls, E-Mail/Push, native Apps, Verschlüsselung, Rechtstexte).
 
 ### Zwei Dinge, die ich zu positiv dargestellt hatte – jetzt klar benannt
 
