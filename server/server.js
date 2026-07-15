@@ -21,9 +21,28 @@ const MIME = {
   '.ttf': 'font/ttf', '.ico': 'image/x-icon'
 };
 
+// Sicherheits-Header für alle Antworten. CSP erlaubt eigene Skripte/Styles,
+// data:/blob:-Bilder (Mahlzeitenfotos) und keine Framing durch Dritte.
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
+  ].join('; ')
+};
+
 function send(res, status, body, headers = {}) {
   const payload = typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body);
-  res.writeHead(status, { 'Cache-Control': 'no-store', ...headers });
+  res.writeHead(status, { 'Cache-Control': 'no-store', ...SECURITY_HEADERS, ...headers });
   res.end(payload);
 }
 function sendJson(res, status, obj) {
@@ -51,6 +70,19 @@ function bearer(req) {
   const h = req.headers['authorization'] || '';
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
+
+// Einfaches In-Memory-Rate-Limit gegen Brute-Force am Login.
+const loginAttempts = new Map();
+const RL_WINDOW = 5 * 60 * 1000;
+const RL_MAX = 8;
+function rateLimitLogin(req) {
+  const ip = req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const rec = loginAttempts.get(ip);
+  if (!rec || now > rec.resetAt) { loginAttempts.set(ip, { count: 1, resetAt: now + RL_WINDOW }); return; }
+  rec.count += 1;
+  if (rec.count > RL_MAX) throw store.httpError(429, 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.');
+}
 function requireUser(req) {
   const user = store.userForToken(bearer(req));
   if (!user) throw store.httpError(401, 'Nicht angemeldet');
@@ -65,6 +97,7 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === '/api/login' && method === 'POST') {
+    rateLimitLogin(req);
     const { email, password } = await readBody(req);
     const user = store.findUserByEmail(email || '');
     if (!user || !verifyPassword(password || '', user.passwordHash)) {
@@ -109,15 +142,30 @@ async function handleApi(req, res, pathname) {
   throw store.httpError(404, 'Endpunkt nicht gefunden');
 }
 
+// Hochgeladene Mahlzeitenfotos aus dem (ansonsten gesperrten) data/uploads-Ordner.
+// Dateinamen sind serverseitig vergeben; nur der Basename wird verwendet.
+function serveUpload(res, pathname) {
+  const name = path.basename(decodeURIComponent(pathname.slice('/uploads/'.length)));
+  if (!/^[A-Za-z0-9_.-]+\.(png|jpg|jpeg|webp)$/.test(name)) return send(res, 404, 'Not found');
+  fs.readFile(path.join(store.UPLOADS_DIR, name), (err, buf) => {
+    if (err) return send(res, 404, 'Not found');
+    send(res, 200, buf, { 'Content-Type': MIME[path.extname(name).toLowerCase()] || 'application/octet-stream' });
+  });
+}
+
+// Interne Pfade nie ausliefern (DB mit Passwort-Hashes/Tokens, Servercode, Dotfiles).
+const STATIC_DENY = /^\/(data|server|node_modules|\.git)(\/|$)|\/\.[^/]/;
+
 function serveStatic(req, res, pathname) {
   let rel = decodeURIComponent(pathname);
   if (rel === '/' || rel === '') rel = '/index.html';
+  if (STATIC_DENY.test(rel)) return send(res, 403, 'Forbidden');
   // Path-Traversal verhindern
   const filePath = path.normalize(path.join(ROOT, rel));
-  if (!filePath.startsWith(ROOT)) return send(res, 403, 'Forbidden');
+  if (filePath !== ROOT && !filePath.startsWith(ROOT + path.sep)) return send(res, 403, 'Forbidden');
   fs.readFile(filePath, (err, buf) => {
     if (err) {
-      // SPA-Fallback auf die App-Shell
+      // Verzeichnis (EISDIR) oder unbekannter Pfad → SPA-Fallback auf die App-Shell
       return fs.readFile(path.join(ROOT, 'index.html'), (e2, shell) =>
         e2 ? send(res, 404, 'Not found') : send(res, 200, shell, { 'Content-Type': MIME['.html'] }));
     }
@@ -131,6 +179,7 @@ const server = http.createServer(async (req, res) => {
   try {
     if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url.pathname);
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method not allowed');
+    if (url.pathname.startsWith('/uploads/')) return serveUpload(res, url.pathname);
     return serveStatic(req, res, url.pathname);
   } catch (err) {
     const status = err.status || 500;
@@ -140,8 +189,14 @@ const server = http.createServer(async (req, res) => {
 });
 
 store.load();
-server.listen(PORT, HOST, () => {
-  console.log(`Maestro Plan läuft auf http://${HOST}:${PORT}`);
-});
+// Abgelaufene Sessions regelmäßig aufräumen (stündlich).
+const sweepTimer = setInterval(() => store.sweepSessions(), 60 * 60 * 1000);
+sweepTimer.unref?.();
+
+if (require.main === module) {
+  server.listen(PORT, HOST, () => {
+    console.log(`Maestro Plan läuft auf http://${HOST}:${PORT}`);
+  });
+}
 
 module.exports = server;

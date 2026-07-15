@@ -7,8 +7,10 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { hashPassword, createToken, isExpired } = require('./auth');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// Datenverzeichnis per Env überschreibbar (Deployment-Konfiguration / isolierte Tests).
+const DATA_DIR = process.env.MAESTRO_DATA_DIR || path.join(__dirname, '..', 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 
 function seed() {
   return {
@@ -43,6 +45,16 @@ function load() {
     db = seed();
     persist();
   }
+  sweepSessions();
+}
+
+// Abgelaufene Sessions entfernen, damit sich in der Datei keine toten Tokens sammeln.
+function sweepSessions() {
+  let changed = false;
+  for (const [token, session] of Object.entries(db.sessions)) {
+    if (isExpired(session)) { delete db.sessions[token]; changed = true; }
+  }
+  if (changed) persist();
 }
 
 function persist() {
@@ -111,17 +123,35 @@ function addMessage(user, text) {
   return stateFor(user);
 }
 
-function addCheckin(user, { type, label, note }) {
+function addCheckin(user, { type, label, note, photo }) {
   const clientId = user.role === 'client' ? user.id : 'anna';
   const client = findUserById(clientId);
-  db.checkins.push({
-    id: nextId('c'), clientId, client: client ? client.name : 'Anna Weber',
+  const id = nextId('c');
+  const entry = {
+    id, clientId, client: client ? client.name : 'Anna Weber',
     type: type === 'meal' ? 'meal' : 'workout',
     label: String(label || '').slice(0, 200), note: String(note || '').slice(0, 500),
     time: 'Gerade eben', createdAt: ++seq
-  });
+  };
+  const photoUrl = storePhoto(id, photo);
+  if (photoUrl) entry.photoUrl = photoUrl;
+  db.checkins.push(entry);
   persist();
   return stateFor(user);
+}
+
+// Speichert ein Base64-Bild aus einem data:-URL sicher ab (Typ-/Größenprüfung,
+// serverseitig vergebener Dateiname) und gibt die Abruf-URL zurück.
+function storePhoto(id, photo) {
+  if (typeof photo !== 'string') return null;
+  const m = photo.match(/^data:image\/(png|jpe?g|webp);base64,([A-Za-z0-9+/=]+)$/);
+  if (!m) return null;
+  const buf = Buffer.from(m[2], 'base64');
+  if (!buf.length || buf.length > 4 * 1024 * 1024) return null; // max. 4 MB
+  const ext = m[1] === 'jpeg' ? 'jpg' : m[1];
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  fs.writeFileSync(path.join(UPLOADS_DIR, id + '.' + ext), buf);
+  return 'uploads/' + id + '.' + ext;
 }
 
 function patchProgress(user, patch) {
@@ -155,10 +185,10 @@ function httpError(status, message) {
 }
 
 module.exports = {
-  load, seed,
+  load, seed, sweepSessions,
   findUserByEmail, findUserById,
   createSession, destroySession, userForToken,
   publicUser, stateFor,
   addMessage, addCheckin, patchProgress, setAppointment,
-  httpError, DB_FILE
+  httpError, DB_FILE, UPLOADS_DIR
 };

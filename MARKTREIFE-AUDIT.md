@@ -14,7 +14,19 @@
 ### Zwei Dinge, die ich zu positiv dargestellt hatte – jetzt klar benannt
 
 1. **Das Mahlzeitenfoto wird nie hochgeladen.** Der „Foto-Check-in" sendet nur einen Textvermerk und eine Nachricht „Foto gesendet". Der Trainer bekommt **das Bild gar nicht**. Der Kernnutzen (Ernährung per Foto beurteilen) ist damit faktisch nicht erfüllt. → `app.js` Zeile ~348–360.
-2. **Der „geteilte" Server ist faktisch Ein-Kunden-Betrieb.** Jede Trainer-Anfrage wird hart auf `'anna'` gemappt (`user.role === 'client' ? user.id : 'anna'`). Die vier Kunden in der Liste (Jonas, Miriam, Daniel) sind **keine echten Nutzer** – kein Login, keine Daten. Echte Mehrmandantenfähigkeit fehlt. → `server/store.js` Zeile 87 ff.
+2. **Der „geteilte" Server ist faktisch Ein-Kunden-Betrieb.** Jede Trainer-Anfrage wird hart auf `'anna'` gemappt (`user.role === 'client' ? user.id : 'anna'`). Die vier Kunden in der Liste (Jonas, Miriam, Daniel) sind **keine echten Nutzer** – kein Login, keine Daten. Echte Mehrmandantenfähigkeit fehlt. → `server/store.js`.
+
+### Direkt in dieser Iteration behoben (verifiziert)
+
+Beim Gegenprüfen fiel eine **echte Sicherheitslücke** auf, die sofort geschlossen wurde – plus die in unserer Hand liegenden Findings:
+
+- 🔴 **DB-Leak geschlossen:** Der statische Server lieferte zuvor `/data/db.json` (Passwort-Hashes **und** Session-Tokens) aus. Jetzt werden `/data`, `/server`, `node_modules` und Dotfiles hart blockiert. Durch **automatischen Test abgesichert**.
+- ✅ **Mahlzeitenfoto wird jetzt wirklich übertragen:** Bild-Upload (Typ-/Größenprüfung, serverseitiger Dateiname), Abruf über `/uploads/…`, Thumbnail im Trainer-Feed. Ende-zu-Ende im Browser verifiziert.
+- ✅ **Security-Header** (CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) auf allen Antworten.
+- ✅ **Login-Rate-Limiting** (Brute-Force-Schutz) und **Session-Aufräumen** (kein Ansammeln toter Tokens).
+- ✅ **Automatisierte Tests + CI:** 13 Tests (Auth, geteilte Daten, Foto-Upload, Security-Header, blockierte interne Pfade, Rate-Limit) mit Node-Test-Runner; GitHub-Actions-Pipeline.
+
+Die Kategorientabellen unten zeigen weiterhin den **ursprünglichen** Prüfstand; die obigen Punkte sind damit teilweise bereits abgehakt. **Weiterhin offen** bleiben v. a. echte Datenbank, Mehrmandantenfähigkeit, DSGVO, Zahlungen, echte Video-Calls, native Apps.
 
 ---
 

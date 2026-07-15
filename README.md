@@ -49,7 +49,9 @@ Ohne erreichbaren Server läuft die App im Demo-Modus; auf dem Einstiegsbildschi
 - **Persistenz & Offline:** Im Connected Mode über den Server, im Demo-Modus über `localStorage`. Wer eingeloggt war, landet direkt wieder in der App.
 - **Installierbare PWA:** Web-App-Manifest, eigene Icons (inkl. maskable) und ein Service Worker, der die App-Shell cacht – die App ist installierbar und startet offline.
 - **Barrierefreiheit:** Skip-Link, Modale mit Dialog-Rolle, Fokus-Falle, Schließen per `Escape` und Fokus-Rückgabe, Respekt für `prefers-reduced-motion`.
-- **Sicherheit:** Passwörter nie im Klartext, Session-Tokens serverseitig widerrufbar, Nutzereingaben werden vor der Ausgabe maskiert (XSS-Schutz), Schutz vor Path-Traversal beim statischen Serving.
+- **Sicherheit:** Passwörter nie im Klartext, Session-Tokens serverseitig widerrufbar und automatisch aufgeräumt, Login-Rate-Limiting, Sicherheits-Header (CSP u. a.), Maskierung von Nutzereingaben (XSS-Schutz), Schutz vor Path-Traversal, und interne Pfade (`/data`, `/server`) werden nie ausgeliefert.
+- **Ernährungsfoto:** Das Mahlzeitenfoto wird im Connected Mode tatsächlich hochgeladen (Typ-/Größenprüfung) und erscheint als Thumbnail im Trainer-Feed.
+- **Automatisierte Tests & CI:** Test-Suite mit Node's eingebautem Runner (`npm test`, keine Abhängigkeiten) für Auth, geteilte Daten, Foto-Upload und Sicherheit; GitHub-Actions-Pipeline prüft jeden Push.
 - **SEO/Social:** Open-Graph- und Twitter-Karten-Meta, Theme-Color, Apple-Web-App-Meta.
 
 ## Projektstruktur
@@ -62,11 +64,21 @@ styles.css              Markendesign (Gold/Lime, Oswald/Titillium)
 sw.js                   Service Worker (Offline-App-Shell)
 manifest.webmanifest    PWA-Manifest
 server/
-  server.js             HTTP-Server: statisches Serving + REST-API
-  store.js              Persistenz (JSON) + Domänenlogik
+  server.js             HTTP-Server: statisches Serving + REST-API + Sicherheit
+  store.js              Persistenz (JSON) + Domänenlogik + Foto-Upload
   auth.js               Passwort-Hashing (scrypt) und Session-Tokens
+tests/                  Automatisierte Tests (Node-Test-Runner, keine Deps)
+.github/workflows/      CI-Pipeline (Syntax-Check + Tests)
 assets/                 Logo, Fotos, Schriften, App-Icons
 BEWERTUNG.md            Produktanalyse: Soll/Ist und Roadmap zum MVP
+MARKTREIFE-AUDIT.md     Kritisches Audit gegen den Marktstandard
+```
+
+Tests lokal ausführen:
+
+```bash
+npm test        # 13 Tests (Auth, geteilte Daten, Foto-Upload, Sicherheit)
+npm run check   # Syntax-Check aller JS-Dateien
 ```
 
 Die Laufzeitdaten des Servers liegen unter `data/db.json` (wird beim ersten Start aus Seed-Daten erzeugt und ist per `.gitignore` ausgenommen).

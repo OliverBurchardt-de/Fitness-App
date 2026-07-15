@@ -74,7 +74,7 @@ function applyServerState(s) {
   if (s.user && s.user.role) state.role = s.user.role;
   state.loggedIn = true;
   if (Array.isArray(s.messages)) state.messages = s.messages.map(m => ({ mine: !!m.mine, from: m.from, text: m.text, time: m.time }));
-  if (Array.isArray(s.checkins)) state.checkins = s.checkins.map(c => ({ type: c.type, client: c.client, label: c.label, note: c.note, time: c.time }));
+  if (Array.isArray(s.checkins)) state.checkins = s.checkins.map(c => ({ type: c.type, client: c.client, label: c.label, note: c.note, time: c.time, photoUrl: c.photoUrl }));
   if (s.progress) state.progress = s.progress;
   state.appointment = s.appointment || null;
   if (Array.isArray(s.clients)) state.clients = s.clients;
@@ -335,7 +335,11 @@ function renderClient() {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { toast('Bitte wähle eine Bilddatei aus'); return; }
-    state.mealPhoto = { previewUrl: URL.createObjectURL(file), name: file.name, note: '', meal: 'Tages-Check-in', capturedAt: new Date().toISOString() };
+    const photo = { previewUrl: URL.createObjectURL(file), name: file.name, note: '', meal: 'Tages-Check-in', capturedAt: new Date().toISOString(), dataUrl: null };
+    state.mealPhoto = photo;
+    const reader = new FileReader();
+    reader.onload = () => { if (state.mealPhoto === photo) state.mealPhoto.dataUrl = reader.result; };
+    reader.readAsDataURL(file);
     renderClient();
   });
   document.querySelector('#mealPhotoNote')?.addEventListener('input', event => { if (state.mealPhoto) state.mealPhoto.note = event.target.value; });
@@ -346,13 +350,14 @@ function renderClient() {
   });
   document.querySelector('#saveMealPhoto')?.addEventListener('click', async () => {
     const note = state.mealPhoto?.note?.trim() || '';
+    const photo = state.mealPhoto?.dataUrl || undefined;
     const text = note ? `📷 Mahlzeiten-Check-in gesendet. ${note}` : '📷 Mahlzeiten-Check-in gesendet.';
     if (API.connected) {
-      await syncState(API.postCheckin({ type:'meal', label:'Mahlzeiten-Foto zur Bewertung', note }));
+      await syncState(API.postCheckin({ type:'meal', label:'Mahlzeiten-Foto zur Bewertung', note, photo }));
       await syncState(API.postMessage(text));
     } else {
       state.messages.push({ mine:true, from:'anna', text, time:'Jetzt' });
-      state.checkins.unshift({ type:'meal', client:'Anna Weber', label:'Mahlzeiten-Foto zur Bewertung', note, time:'Gerade eben' });
+      state.checkins.unshift({ type:'meal', client:'Anna Weber', label:'Mahlzeiten-Foto zur Bewertung', note, time:'Gerade eben', photoUrl: state.mealPhoto?.previewUrl });
     }
     if (state.mealPhoto?.previewUrl) URL.revokeObjectURL(state.mealPhoto.previewUrl);
     state.mealPhoto = null;
@@ -485,7 +490,7 @@ function adminShell(content,title,view=state.adminView) {
 
 function adminDashboard() {
   const openCheckins = 7 + state.checkins.length;
-  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${escapeHtml((c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><strong>${escapeHtml(c.client)} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${escapeHtml(c.label)}${c.note?` – „${escapeHtml(c.note)}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center"><small class="muted">${escapeHtml(c.time)}</small><button class="btn btn-ghost btn-small" data-admin="chat">Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
+  const liveFeed = state.checkins.length ? `<section class="card card-pad live-feed" style="margin:0 0 20px"><div class="row-between"><div><span class="eyebrow">Live von deinen Kunden</span><h2 style="margin:2px 0">Neue Check-ins</h2></div><span class="tag green">${state.checkins.length} neu</span></div><div class="stack" style="margin-top:12px">${state.checkins.slice(0,4).map(c=>`<div class="row-between"><div class="row"><div class="avatar">${escapeHtml((c.client||'AW').split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><strong>${escapeHtml(c.client)} · ${c.type==='workout'?'Training':'Ernährung'}</strong><small class="muted" style="display:block">${escapeHtml(c.label)}${c.note?` – „${escapeHtml(c.note)}"`:''}</small></div></div><div class="row" style="gap:8px;align-items:center">${c.photoUrl?`<img src="${escapeHtml(c.photoUrl)}" alt="Mahlzeitenfoto von ${escapeHtml(c.client)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover">`:''}<small class="muted">${escapeHtml(c.time)}</small><button class="btn btn-ghost btn-small" data-admin="chat">Antworten</button></div></div>`).join('<div class="divider"></div>')}</div></section>` : '';
   return adminShell(`<div class="row-between"><div><span class="eyebrow">Montag, 12. Juli</span><h1 style="font-size:2.8rem;margin:4px 0">Guten Morgen, Sergio.</h1><p style="color:#666">Vier Kunden brauchen heute deine Aufmerksamkeit.</p></div><button class="btn btn-primary" data-admin="plans">＋ Plan erstellen</button></div>
   <section class="grid-4" style="margin:24px 0"><div class="card metric-card"><span class="muted">Aktive Kunden</span><strong>24</strong><span class="lime">+3 diesen Monat</span></div><div class="card metric-card"><span class="muted">Trainingsquote</span><strong>82%</strong><span class="gold">+6% zum Vormonat</span></div><div class="card metric-card"><span class="muted">Offene Check-ins</span><strong>${openCheckins}</strong><span style="color:#f3a85b">3 überfällig</span></div><div class="card metric-card"><span class="muted">Termine heute</span><strong>4</strong><button class="btn btn-ghost btn-small" data-admin="appointments">Nächster: 11:30 →</button></div></section>
   ${liveFeed}

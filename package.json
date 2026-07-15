@@ -5,7 +5,9 @@
   "description": "The Maestro Plan – Personal-Training- und Coaching-App (Kunden-App + Trainer-Dashboard) mit dependency-freiem Node-Backend.",
   "type": "commonjs",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "test": "node --test",
+    "check": "node --check server/server.js && node --check app.js && node --check api-client.js"
   },
   "engines": {
     "node": ">=18"
