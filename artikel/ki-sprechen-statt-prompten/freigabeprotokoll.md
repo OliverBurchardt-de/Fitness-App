@@ -18,6 +18,7 @@
 | Anwendbar seit 02.02.2025 | wie vor | Art. 113 lit. a (Kapitel I und II) | 19.08.2026 | belegt |
 | „Denke Schritt für Schritt“ ist bei Reasoning-Modellen überflüssig, weil sie intern so arbeiten; knappe, direkte Anweisungen sind besser | OpenAI, „Reasoning best practices“, Plattform-Dokumentation | Abschnitt „Avoid chain-of-thought prompts“ | 19.08.2026 | belegt über Suchtreffer, **Seite nicht geöffnet** |
 | Für Claude erst allgemein formulieren statt den Denkweg kleinteilig vorzuschreiben | Anthropic, „Extended thinking tips“, Claude-Dokumentation | Abschnitt zu allgemeinen gegenüber vorgeschriebenen Anweisungen | 19.08.2026 | belegt über Suchtreffer, **Seite nicht geöffnet** |
+| Eigenes Diktiertempo 102 Wörter pro Minute, oberste zwei Prozent der Nutzer des verwendeten Werkzeugs | Screenshot der Auswertung, vom Nutzer am 19.08.2026 vorgelegt und als eigenes Diktiertempo bestätigt | Kennzahlenkachel „Words per minute“ mit Perzentilanzeige | 19.08.2026 | freigegeben |
 | Kernthese, Metapher „Prompt-Theater“, Praxisbeispiel Zahnarzt-GmbH, Arbeitsteilung in vier Schritten | Briefing-Dokument des Nutzers vom 19.08.2026 | Abschnitte „Kernthese“, „Sieben Gründe“, „Praxisbeispiel“, „Empfohlene Arbeitsteilung“ | 19.08.2026 | freigegeben |
 | Kanzl.AI als Leistungsseite | `burchardt-kollegen.de/leistungen/kanzl-ai/` | — | 19.08.2026 | über Suchtreffer bestätigt, **Seite nicht geöffnet** |
 
@@ -84,10 +85,27 @@ Beide Schaubilder: Textbreiten rechnerisch geprüft (Georgia, Faktor 0,52 normal
 
 ## Modellrechnungen
 
-Keine steuerliche Modellrechnung im Artikel. Der einzige numerische Vergleich
-ist die zitierte Studie; er wird nicht extrapoliert. Der Satz „Übertragen Sie den
-Faktor nicht auf jedes Diktat am Schreibtisch“ steht bewusst im Text, damit die
-Zahl nicht über ihre Aussagekraft hinaus gelesen wird.
+Keine steuerliche Modellrechnung im Artikel. Der Faktor aus der Studie wird nicht
+extrapoliert; der Satz „übertragen Sie den Faktor nicht ungeprüft auf jedes
+Diktat am Schreibtisch“ steht bewusst im Text, damit die Zahl nicht über ihre
+Aussagekraft hinaus gelesen wird.
+
+**Eine Rechnung im Text**, im Abschnitt „Warum beim Sprechen mehr ankommt“:
+
+| Schritt | Wert | Herkunft |
+|---|---|---|
+| Eigenes Diktiertempo | 102 Wörter/Minute | Screenshot des Nutzers |
+| Länge des gesprochenen Beispiels | 52 Wörter | maschinelle Zählung des im Artikel abgedruckten Zitats |
+| Sprechdauer | 52 ÷ 102 × 60 = 30,6 Sekunden, im Text als „gut dreißig Sekunden“ | Rechnung |
+| Erforderliches Tipptempo für dieselben 52 Wörter in 30 Sekunden | 52 ÷ 30 × 60 = 104 Wörter/Minute, im Text als „über hundert Wörter pro Minute“ | Rechnung |
+
+Zweitprüfung durchgeführt, beide Werte bestätigt. Ausgeblendet sind Pausen,
+Korrekturen und die Einrichtung des Diktats; die Aussage „das erreicht kaum
+jemand“ bezieht sich auf das Tipptempo und ist als Einschätzung formuliert, nicht
+als Statistik. Das Perzentil („oberste zwei Prozent“) stammt aus der Auswertung
+des verwendeten Werkzeugs; welche Nutzergruppe die Bezugsmenge bildet, gibt die
+Anzeige nicht an — der Text formuliert deshalb „seiner Nutzer“ und nicht
+„aller Menschen“. Ändert sich das Tempo, ändern sich beide Zeitangaben.
 
 ## Annahmen
 
@@ -100,10 +118,15 @@ Zahl nicht über ihre Aussagekraft hinaus gelesen wird.
 
 ## Verwendete Praxiserfahrung
 
-Keine. Der Artikel enthält Meinung („Ich halte diesen Aufwand … für verschwendet“)
-und Empfehlung („Aus beidem ergibt sich eine Reihenfolge, die ich für tragfähig
-halte“) — beides ist begründet und als solche gekennzeichnet. Behauptete
-Kanzleierfahrung ist nicht enthalten.
+**Eine, freigegeben:** das eigene Diktiertempo von 102 Wörtern pro Minute. Der
+Nutzer hat den Screenshot am 19.08.2026 vorgelegt und auf Rückfrage bestätigt,
+dass es sich um sein Diktiertempo handelt und nicht um ein Tipptempo. Die
+Unterscheidung war nötig, weil die Aussage sich sonst umkehrt.
+
+Im Übrigen enthält der Artikel Meinung („Ich halte diesen Aufwand … für
+verschwendet“) und Empfehlung („Aus beidem ergibt sich eine Reihenfolge, die ich
+für tragfähig halte“) — beides ist begründet und als solche gekennzeichnet.
+Weitere Kanzleierfahrung ist nicht behauptet.
 
 Der `[OLIVER-INPUT]`-Marker im Abschnitt „Derselbe Fall, zwei Eingaben“ ist am
 19.08.2026 auf Wunsch entfernt worden. An seine Stelle tritt kein erfundener
