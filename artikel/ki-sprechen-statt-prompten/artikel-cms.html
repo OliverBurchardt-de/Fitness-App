@@ -1,0 +1,123 @@
+<!--
+  Artikelrumpf für das Redaktionssystem.
+
+  Enthält NICHT: H1, Meta-Daten, Beitragsbild, Schema-Markup.
+  H1 und Meta-Daten setzt das CMS aus dem CMS-Handoff, das Schema-Markup
+  kommt aus schema-markup.html in den <head>.
+
+  Die beiden Bildpfade zeigen auf /wp-content/uploads/ und sind nach dem
+  Medien-Upload auf die tatsächlichen URLs zu ändern.
+  Alt-Texte und Bildunterschriften stehen bereits im Markup.
+-->
+
+<p>Es gibt kaum eine Kanzlei-Fortbildung zu künstlicher Intelligenz, in der nicht irgendwann die Sammlung der guten Prompts auftaucht. „Du bist ein erfahrener Steuerberater.“ „Gehe Schritt für Schritt vor.“ „Antworte in exakt fünf Abschnitten.“ „Wenn du das verstanden hast, antworte nur mit OK.“ Wer diese Zeilen kennt, hat auch die Tabellen gesehen, in denen sie gesammelt und gepflegt werden, als handle es sich um Formulierungsmuster für Einspruchsschreiben.</p>
+
+<p>Ich halte diesen Aufwand für die tägliche Arbeit inzwischen für verschwendet. Nicht, weil die Formeln nie funktioniert hätten — sie waren der Behelf, mit dem man schwächeren Modellen etwas abgerungen hat. Sondern weil sie ein Problem lösen, das es in dieser Form nicht mehr gibt, und dabei genau das verdrängen, worauf es ankommt: den Sachverhalt.</p>
+
+<p>Die interessantere Frage lautet nicht mehr „Wie schreibe ich den perfekten Prompt?“, sondern „Wie erkläre ich der KI mein Problem so, wie ich es einem kompetenten Kollegen erklären würde?“ Und für diese Aufgabe ist die Tastatur selten das beste Werkzeug.</p>
+
+<h2>Woher die Zauberformeln kommen</h2>
+
+<p>Frühe Sprachmodelle reagierten auf knappe, mehrdeutige Eingaben unzuverlässig. Wer nur „Wie ist das mit dem Firmenwagen?“ tippte, bekam eine beliebige Allgemeinplatzsammlung. Also hat man gelernt, die Modelle zu führen: eine Rolle zuweisen, ein Ausgabeformat vorschreiben, das Denken in Schritte zerlegen. Das war kein Aberglaube, das war ein Workaround, und er hat gewirkt.</p>
+
+<p>Aus dem Workaround ist ein Ritual geworden. Es gibt Kurse, Vorlagenmärkte und Kanzleihandbücher für Formulierungen, deren Zweck darin besteht, eine technische Schwäche auszugleichen, die bei den aktuellen Modellen weitgehend behoben ist. Bemerkenswert ist, wer inzwischen davon abrät: die Hersteller selbst. OpenAI hält in seinen <a href="https://platform.openai.com/docs/guides/reasoning-best-practices">Hinweisen zu Reasoning-Modellen</a> fest, die Aufforderung „denke Schritt für Schritt“ sei überflüssig, weil diese Modelle intern ohnehin so arbeiten; knappe, direkte Anweisungen seien besser. Anthropic empfiehlt für Claude, <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/extended-thinking-tips">erst allgemein zu formulieren</a> und den Denkweg nicht kleinteilig vorzuschreiben — eine übergeordnete Aufforderung, gründlich nachzudenken, trägt dort oft weiter als eine vorgegebene Schrittfolge.</p>
+
+<p>Was bleibt, ist eine Beschäftigung mit der Verpackung. Der Nutzer feilt an der Anrede des Modells, während die Information fehlt, die das Modell nicht erraten kann.</p>
+
+<h2>Derselbe Fall, zwei Eingaben</h2>
+
+<p>Ein Beispiel aus der Beratungspraxis, bewusst ein alltäglicher Fall: Eine Zahnarzt-GmbH überlässt ihrem Gesellschafter-Geschäftsführer ein Fahrzeug, das auch privat gefahren wird.</p>
+
+<p>So sieht die getippte Schablone aus:</p>
+
+<blockquote>„Du bist Steuerexperte. Analysiere folgenden Fall nach deutschem Steuerrecht. Berücksichtige alle relevanten Aspekte. Erstelle eine Gliederung. Nenne Risiken.“</blockquote>
+
+<p>Und so die gesprochene Erklärung, in einem Zug diktiert:</p>
+
+<blockquote>„Ich habe eine Zahnarzt-GmbH, die ein Fahrzeug auch privat nutzen lässt. Ich will zunächst keine fertige Stellungnahme, sondern eine strukturierte Liste der steuerlichen Themen, die ich prüfen muss: Umsatzsteuer, Lohnsteuer, verdeckte Gewinnausschüttung und Dokumentation. Bitte denke aus Sicht einer deutschen Steuerkanzlei, nenne Unsicherheiten klar und stelle mir die drei wichtigsten Rückfragen zuerst.“</blockquote>
+
+<p>Gehen Sie beide Texte einmal durch und markieren Sie alles, was etwas über diesen konkreten Mandanten aussagt. Im ersten bleibt nichts übrig.</p>
+
+<figure>
+  <img src="/wp-content/uploads/schaubild-schablone-sachverhalt.webp" alt="Gegenüberstellung zweier Eingaben zum selben Fall: Die getippte Schablone enthält drei Vorgaben zu Rolle und Form, eine Angabe zu Ziel und Abgrenzung und keine Angabe zum Sachverhalt. Die gesprochene Erklärung enthält keine Rollenvorgabe, fünf Angaben zu Ziel und Abgrenzung, drei erbetene Rückfragen und drei Angaben zum Sachverhalt.">
+  <figcaption>Die Schablone beschreibt, wie geantwortet werden soll. Über den Fall selbst sagt sie nichts — und genau das kann kein Modell ergänzen.</figcaption>
+</figure>
+
+<p>Die zweite Eingabe ist nicht länger, weil jemand mehr Mühe investiert hätte. Sie ist länger, weil beim Sprechen automatisch mitkommt, was man beim Tippen weglässt: die Rechtsform, die tatsächliche Nutzung, das Ziel der Anfrage, die Grenze des Auftrags. Und sie erlaubt sofortige Korrektur, sobald die erste Rückfrage kommt: „Der Gesellschafter ist zugleich Geschäftsführer.“ „Es gibt ein Fahrtenbuch.“ „Bitte nur die Folgen für die Lohnabrechnung.“</p>
+
+<p>Damit ist der eigentliche Punkt benannt, und er ist kein Komfortargument. Sprechen ist nicht angenehmer als Tippen, es liefert ein besseres Ergebnis. Wie brauchbar eine KI-Antwort ausfällt, hängt vor allem daran, wie viel das Modell vom Fall weiß; was Sie nicht sagen, ersetzt es durch Annahmen, und die klingen genauso souverän wie der Rest. Wer tippt, kürzt — man merkt es nicht einmal. Wer spricht, erzählt, und erzählt dabei die Vorgeschichte, die Ausnahme und das eigentliche Ziel gleich mit.</p>
+
+<h2>Warum beim Sprechen mehr ankommt</h2>
+
+<p>Der erste Grund ist banal und trotzdem entscheidend: Tempo. Sprechen ist schneller als Tippen, und zwar nicht knapp. In einer Untersuchung von Ruan und anderen aus dem Jahr 2016 haben 32 Teilnehmer denselben Text einmal auf der Smartphone-Tastatur getippt und einmal diktiert. Die Spracheingabe war im Englischen <a href="https://arxiv.org/abs/1608.07323">dreimal so schnell wie das Tippen</a>, bei einer um 20,4 Prozent niedrigeren Fehlerquote; auf Mandarin lag der Faktor bei 2,8.</p>
+
+<figure>
+  <img src="/wp-content/uploads/schaubild-tippen-sprechen-tempo.webp" alt="Vergleich zweier Eingabewege auf dem Smartphone: Beim Tippen liegt das Tempo im Verhältnis bei 1,0-fach, beim Sprechen bei 3,0-fach; die Fehlerquote ist im Englischen um 20,4 Prozent niedriger und die Eingabe auf Mandarin 2,8-fach schneller, gemessen an 32 Teilnehmern.">
+  <figcaption>Der Faktor drei ist nicht der Punkt. Der Punkt ist, was Sie in derselben Minute alles unterbringen, statt es aus Bequemlichkeit wegzulassen.</figcaption>
+</figure>
+
+<p>Die Studie misst Texteingabe, nicht Beratungsqualität, und sie ist an kurzen Sätzen auf einem Smartphone entstanden; übertragen Sie den Faktor nicht ungeprüft auf jedes Diktat am Schreibtisch.</p>
+
+<p>Bei mir sieht es konkret so aus: Das Diktierwerkzeug, mit dem ich arbeite, weist mir 102 Wörter pro Minute aus und ordnet mich damit den obersten zwei Prozent seiner Nutzer zu. Das gesprochene Beispiel weiter oben hat 52 Wörter, in diesem Tempo also gut dreißig Sekunden. Wer dieselben 52 Wörter in dreißig Sekunden tippen wollte, müsste über hundert Wörter pro Minute schaffen — das erreicht kaum jemand, und schon gar nicht nebenbei zwischen zwei Terminen.</p>
+
+<p>Genau da liegt der Punkt: Das Tempo bestimmt, wie viel Sie überhaupt sagen. Wer in derselben Minute das Dreifache unterbringt, lässt die Vorgeschichte nicht weg, nur weil sie zu mühsam zu tippen wäre. Deshalb ist der Tempovorteil kein Nebeneffekt — er ist der Grund, warum die gesprochene Eingabe mehr Kontext enthält.</p>
+
+<p>Dazu kommen drei Effekte, die sich schlecht messen, aber täglich zeigen. Beim Sprechen sinkt die Hemmschwelle bei Fragen, die noch nicht fertig gedacht sind — man muss keinen Text komponieren, sondern nur anfangen. Der Gedankengang bleibt erhalten: Hypothese, Einschränkung, Beispiel, Kurskorrektur, so wie man tatsächlich arbeitet und nicht wie eine einmal abgeschickte Anweisung. Und die Nachschärfung im Dialog kostet Sekunden statt eines neuen Anlaufs.</p>
+
+<p>Nicht zuletzt ist der Weg über die Stimme barriereärmer. Wer nicht schnell tippt oder ohnehin den halben Tag am Bildschirm sitzt, gewinnt dabei mehr als nur Zeit; unterwegs, zwischen zwei Terminen oder während der Aktendurchsicht ist er oft der einzige praktikable.</p>
+
+<h2>Wo der geschriebene Prompt bleibt</h2>
+
+<p>Sprache ersetzt kein klares Denken. Sie ersetzt die künstliche Prompt-Literatur — nicht den schriftlichen Auftrag, wenn es auf dessen Wortlaut ankommt.</p>
+
+<p>Schreiben Sie, wenn eines dieser Merkmale zutrifft:</p>
+
+<ul>
+  <li><strong>Das Ergebnis muss reproduzierbar sein.</strong> Zwei gesprochene Erklärungen desselben Sachverhalts sind nie identisch; zwei identische Textbausteine schon.</li>
+  <li><strong>Es geht um Struktur statt Fließtext</strong>, also um Tabellen, Vorlagen, JSON oder Code. Dort ist die Anweisung selbst das Format.</li>
+  <li><strong>Der Wortlaut wird später geprüft.</strong> Eine steuerlich oder rechtlich relevante Formulierung, die in ein Mandantenschreiben wandert, muss man gegenlesen können — auch die Frage, aus der sie entstanden ist.</li>
+  <li><strong>Der Ablauf wiederholt sich.</strong> Was zwanzigmal im Monat gleich läuft, gehört in einen festen Prompt und nicht jedes Mal neu ins Mikrofon.</li>
+  <li><strong>Vor der Eingabe ist eine bewusste Prüfung nötig</strong>, weil Mandantendaten betroffen sind. Getippter Text lässt sich vor dem Absenden noch einmal lesen. Gesprochenes ist schon draußen.</li>
+</ul>
+
+<p>Der letzte Punkt ist der wichtigste, und er führt zum eigentlichen Kanzleithema.</p>
+
+<h2>Was in der Kanzlei zusätzlich gilt</h2>
+
+<p>Spracheingabe beschleunigt die Erfassung, nicht die Zulässigkeit. An der Verschwiegenheitspflicht ändert das Mikrofon nichts: Wer Mandantendaten in ein KI-System gibt, bezieht einen Dritten in ein Mandatsverhältnis ein, und das ist berufsrechtlich und datenschutzrechtlich zu unterlegen. Die Bundessteuerberaterkammer hat dazu einen <a href="https://www.bstbk.de/downloads/bstbk/digitalisierung/BStBK_FAQ-KI_end.pdf">FAQ-Katalog zum KI-Einsatz im Berufsstand</a> veröffentlicht, der die Linie zusammenfasst: Vertrauliche Daten dürfen an einen KI-Dienstleister nur, wenn dieser vertraglich strikt zur Verschwiegenheit verpflichtet ist, die datenschutzrechtliche Prüfung dokumentiert vorliegt und ein Auftragsverarbeitungsvertrag geschlossen ist.</p>
+
+<p>Beim Diktieren verschärft sich das Problem, weil man beiläufig mehr sagt. Genau die Details, die die Antwort besser machen — Ort, Branche, Betriebsgröße, Familienverhältnisse —, machen einen Mandanten bestimmbar, auch ohne dass sein Name fällt. Der Vorteil der Methode ist zugleich ihr Risiko.</p>
+
+<p>Dazu kommt eine Pflicht, die viele Kanzleien noch nicht auf dem Schirm haben: Nach Art. 4 der <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj">KI-Verordnung (EU) 2024/1689</a> müssen Betreiber von KI-Systemen dafür sorgen, dass ihre Mitarbeiter über ausreichende KI-Kompetenz verfügen. Diese Vorschrift gilt seit dem 2. Februar 2025 und trifft auch die Kanzlei, die „nur“ ein Standardmodell nutzt. Ein Zertifikat verlangt sie nicht, wohl aber ein dokumentiertes, zum Risiko passendes Vorgehen.</p>
+
+<h2>Wie ich die Arbeit aufteilen würde</h2>
+
+<p>Aus beidem ergibt sich eine Reihenfolge, die ich für tragfähig halte:</p>
+
+<ol>
+  <li><strong>Sprechen</strong>, um Sachverhalt, Ziel und Abgrenzung schnell und vollständig zu erfassen.</li>
+  <li><strong>Dialogisch weiterarbeiten</strong> und die Rückfragen des Modells zulassen, statt die erste Antwort zu bewerten.</li>
+  <li><strong>Schriftlich prüfen und festhalten</strong>, sobald das Ergebnis fachlich, rechtlich oder für die Akte relevant wird.</li>
+  <li><strong>Feste Prompts nur dort</strong>, wo ein Ablauf wiederkehrt und zuverlässig automatisiert werden soll.</li>
+</ol>
+
+<p>Welcher Schritt in welcher Umgebung stattfinden darf, entscheidet die Datenlage, nicht die Bequemlichkeit. Wie wir das in unserer Kanzlei aufsetzen, beschreiben wir unter <a href="https://www.burchardt-kollegen.de/leistungen/kanzl-ai/">Kanzl.AI</a>.</p>
+
+<h2>Was daraus folgt</h2>
+
+<p>Die neue Kompetenz ist nicht die perfekte Formel. Sie besteht darin, einer Maschine den richtigen Kontext zu geben: Was ist der Fall, was soll herauskommen, was gilt nicht, wo bin ich unsicher. Das ist dieselbe Fähigkeit, die einen guten Aktenvermerk von einem schlechten unterscheidet, und sie war noch nie an eine Tastatur gebunden.</p>
+
+<p>Die Stimme ist also nicht das Ende des Promptens. Sie ist das Ende des Prompt-Theaters — und der Anfang eines Gesprächs, für das man vorher wissen muss, was man eigentlich fragen will.</p>
+
+<h2>Häufige Fragen</h2>
+
+<h3>Welche Software brauche ich, um mit einer KI zu sprechen?</h3>
+<p>In der Regel keine zusätzliche. Die verbreiteten KI-Oberflächen haben ein Mikrofonsymbol im Eingabefeld, Windows und macOS bringen eigene Diktierfunktionen mit, und für längere Diktate gibt es spezialisierte Werkzeuge. Die Auswahl entscheidet sich nicht an der Bedienung, sondern daran, wo die Aufnahme verarbeitet wird, wie lange sie gespeichert bleibt und ob der Anbieter zur Verschwiegenheit verpflichtet werden kann. Diese Prüfung gehört vor die erste Nutzung.</p>
+<h3>Reicht es, den Namen des Mandanten wegzulassen?</h3>
+<p>Nein. Ein Sachverhalt kann eine Person auch ohne Namen bestimmbar machen; Ort, Branche, Rechtsform und Betriebsgröße genügen oft, gerade in einer überschaubaren Region. Beim Diktieren rutschen solche Angaben besonders leicht mit hinein, weil man erzählt statt formuliert. Tragfähig ist deshalb nur eine Umgebung, in der die Eingabe berufs- und datenschutzrechtlich abgesichert ist. Das Weglassen des Namens ersetzt sie nicht.</p>
+<h3>Wie lang sollte eine gesprochene Erklärung sein?</h3>
+<p>So lang, bis Sachverhalt, Ziel und Abgrenzung gesagt sind — meist eine bis drei Minuten. Kürzer wird es selten vollständig, länger beginnt man meist, Antworten vorwegzunehmen, die man besser dem Modell überlässt. Ein brauchbarer Selbsttest: Könnte ein Kollege, der den Fall nicht kennt, nach dieser Erklärung sinnvoll nachfragen? Dann reicht sie auch für die KI.</p>
+<h3>Was mache ich, wenn die Spracherkennung Fachbegriffe falsch schreibt?</h3>
+<p>Weitersprechen und im nächsten Satz korrigieren. Ein verunglücktes Wort im Fließtext ist kein Grund, die Eingabe neu zu beginnen, weil sich der gemeinte Begriff meist aus dem Zusammenhang ergibt. Anders liegt es bei Zahlen, Namen, Daten und Aktenzeichen: Die tippen Sie besser selbst oder lesen sie vor dem Absenden gegen, weil ein Zahlendreher hier keine Nachfrage auslöst, sondern eine falsche Antwort.</p>
+<h3>Lohnt sich eine Prompt-Schulung im Team dann überhaupt noch?</h3>
+<p>Für die tägliche Arbeit kaum, für wiederkehrende Abläufe schon. Wer Mitarbeitern Formelsammlungen beibringt, trainiert eine Fertigkeit, die mit jeder Modellgeneration weniger trägt. Sinnvoll bleibt die Schulung dort, wo feste Prompts in einen Prozess eingebaut werden, und vor allem dort, wo es um Datenschutz, Verschwiegenheit und die Bewertung von Antworten geht — das ist ohnehin der Teil, den Art. 4 der KI-Verordnung von jeder Kanzlei verlangt.</p>

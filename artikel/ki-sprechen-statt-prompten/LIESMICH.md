@@ -5,7 +5,9 @@ erstellt nach dem Skill `bk-blogartikel` und `bk-schaubilder`.
 
 | Datei | Inhalt |
 |---|---|
+| `UEBERGABE.md` | Übergabe an das Zielprojekt: was wohin, Entscheidungen, offene Punkte |
 | `artikel.md` | Publikationsinhalt, reines Markdown |
+| `artikel-cms.html` | derselbe Text als HTML-Rumpf für den Beitragseditor |
 | `cms-handoff.md` | Meta-Daten, Bildpositionen, Alt-Texte, Links, Schema-Hinweise |
 | `freigabeprotokoll.md` | Intern. Quellen, Auszählungen, offene Punkte. Nicht veröffentlichen. |
 | `schema-markup.html` | JSON-LD für den `<head>`: BlogPosting + FAQPage |
