@@ -4,7 +4,7 @@
 **Bearbeitet am:** 19.08.2026
 **Artikeltyp:** A (Standpunkt) mit erklärendem Mittelteil
 **Suchintention:** „Muss ich noch Prompts schreiben / lohnt sich Spracheingabe bei KI“ — eine Frage, kein Themenmix
-**Länge:** 1.459 Wörter Haupttext, 338 Wörter FAQ
+**Länge:** 1.469 Wörter Haupttext, 338 Wörter FAQ
 **Rechtsstand:** 19.08.2026. Zeitabhängig sind nur zwei Aussagen: der BStBK-FAQ-Katalog (Stand 27.01.2026) und Art. 4 KI-VO (anwendbar seit 02.02.2025).
 
 ## Quellen
@@ -122,7 +122,7 @@ Text deutlich tragen würde, steht ein `[OLIVER-INPUT]`-Marker.
 - Abschnitt „Wo der geschriebene Prompt bleibt“ ist eine Liste mit fünf Punkten.
   Sie ist inhaltlich gerechtfertigt (fünf trennscharfe Fälle), erhöht aber den
   Listenanteil des Artikels. Zusammen mit der Vierer-Aufzählung in „Wie ich die
-  Arbeit aufteilen würde“ sind das zwei Listen auf 1.459 Wörter — vertretbar,
+  Arbeit aufteilen würde“ sind das zwei Listen auf 1.469 Wörter — vertretbar,
   aber die Grenze.
 - Der Einstieg beginnt mit einer Szene, nicht mit einer These. Das weicht bewusst
   vom Muster des Referenzartikels ab, der mit der Gegenposition einsteigt.

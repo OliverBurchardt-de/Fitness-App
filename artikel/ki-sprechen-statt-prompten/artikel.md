@@ -26,7 +26,7 @@ Und so die gesprochene Erklärung, in einem Zug diktiert:
 
 > „Ich habe eine Zahnarzt-GmbH, die ein Fahrzeug auch privat nutzen lässt. Ich will zunächst keine fertige Stellungnahme, sondern eine strukturierte Liste der steuerlichen Themen, die ich prüfen muss: Umsatzsteuer, Lohnsteuer, verdeckte Gewinnausschüttung und Dokumentation. Bitte denke aus Sicht einer deutschen Steuerkanzlei, nenne Unsicherheiten klar und stelle mir die drei wichtigsten Rückfragen zuerst."
 
-Zählen Sie beide Texte einmal aus, dann wird der Unterschied unangenehm deutlich.
+Gehen Sie beide Texte einmal durch und markieren Sie alles, was etwas über diesen konkreten Mandanten aussagt. Im ersten bleibt nichts übrig.
 
 ![Gegenüberstellung zweier Eingaben zum selben Fall: Die getippte Schablone enthält drei Vorgaben zu Rolle und Form, eine Angabe zu Ziel und Abgrenzung und keine Angabe zum Sachverhalt. Die gesprochene Erklärung enthält keine Rollenvorgabe, fünf Angaben zu Ziel und Abgrenzung, drei erbetene Rückfragen und drei Angaben zum Sachverhalt.](schaubild-schablone-sachverhalt.webp)
 
