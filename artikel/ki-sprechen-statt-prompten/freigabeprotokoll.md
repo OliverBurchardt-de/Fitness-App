@@ -103,19 +103,25 @@ Zahl nicht über ihre Aussagekraft hinaus gelesen wird.
 Keine. Der Artikel enthält Meinung („Ich halte diesen Aufwand … für verschwendet“)
 und Empfehlung („Aus beidem ergibt sich eine Reihenfolge, die ich für tragfähig
 halte“) — beides ist begründet und als solche gekennzeichnet. Behauptete
-Kanzleierfahrung ist nicht enthalten. An der Stelle, an der ein eigener Fall den
-Text deutlich tragen würde, steht ein `[OLIVER-INPUT]`-Marker.
+Kanzleierfahrung ist nicht enthalten.
+
+Der `[OLIVER-INPUT]`-Marker im Abschnitt „Derselbe Fall, zwei Eingaben“ ist am
+19.08.2026 auf Wunsch entfernt worden. An seine Stelle tritt kein erfundener
+Fall, sondern die Begründung, warum der gesprochene Weg das bessere Ergebnis
+liefert: Sie stützt sich auf das ausgezählte Beispiel darüber und auf die
+Kernthese des Briefings, nicht auf eine Kanzleibeobachtung. Damit ist die Stelle
+belegfrei tragfähig; ein späterer echter Fall kann sie ersetzen, ist aber nicht
+mehr nötig.
 
 ## Offene Punkte
 
 | Nr. | Punkt | Art |
 |---|---|---|
-| 1 | `[OLIVER-INPUT]` eigener Fall im Abschnitt „Derselbe Fall, zwei Eingaben“ (optional, aber Marker muss vor Veröffentlichung raus) | Sperre |
-| 2 | Primärquellen nicht geöffnet, fünf externe Links ungeklickt | Sperre |
-| 3 | Bestehender Homepage-Artikel nicht abgeglichen; Slug- und Weiterleitungsentscheidung offen | Sperre |
-| 4 | Beitragsbild nicht ausgewählt, Alt-Text daher vorläufig | Warnung |
-| 5 | `XXX`-Platzhalter im Schema-Markup (Datumsangaben, Autoren-URL, Logo, Beitragsbild) | Warnung |
-| 6 | Autorenseite für `author.url` nicht bestätigt | Warnung |
+| 1 | Primärquellen nicht geöffnet, fünf externe Links ungeklickt | Sperre |
+| 2 | Bestehender Homepage-Artikel nicht abgeglichen; Slug- und Weiterleitungsentscheidung offen | Sperre |
+| 3 | Beitragsbild nicht ausgewählt, Alt-Text daher vorläufig | Warnung |
+| 4 | `XXX`-Platzhalter im Schema-Markup (Datumsangaben, Autoren-URL, Logo, Beitragsbild) | Warnung |
+| 5 | Autorenseite für `author.url` nicht bestätigt | Warnung |
 
 ## Warnungen aus der Redaktionsprüfung
 
@@ -133,8 +139,8 @@ Text deutlich tragen würde, steht ein `[OLIVER-INPUT]`-Marker.
 
 ## Status
 
-**Nicht freigabefähig.** Offen sind die Punkte 1 bis 3. Der `[PRÜFEN]`-Marker zur
-Herstellerdokumentation ist am 19.08.2026 durch zwei benannte Quellen ersetzt
-worden und damit erledigt. Es fehlen die Quellenkontrolle am geöffneten Original,
-die Entscheidung über den `[OLIVER-INPUT]`-Marker und der Abgleich mit dem
-bestehenden Artikel.
+**Nicht freigabefähig.** Offen sind die Punkte 1 und 2. Beide Marker sind erledigt:
+der `[PRÜFEN]`-Marker durch zwei benannte Herstellerquellen, der
+`[OLIVER-INPUT]`-Marker durch eine Begründung, die ohne Kanzleierfahrung
+auskommt. Es fehlen die Quellenkontrolle am geöffneten Original und der Abgleich
+mit dem bestehenden Artikel.

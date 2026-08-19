@@ -34,17 +34,17 @@ Gehen Sie beide Texte einmal durch und markieren Sie alles, was etwas über dies
 
 Die zweite Eingabe ist nicht länger, weil jemand mehr Mühe investiert hätte. Sie ist länger, weil beim Sprechen automatisch mitkommt, was man beim Tippen weglässt: die Rechtsform, die tatsächliche Nutzung, das Ziel der Anfrage, die Grenze des Auftrags. Und sie erlaubt sofortige Korrektur, sobald die erste Rückfrage kommt: „Der Gesellschafter ist zugleich Geschäftsführer." „Es gibt ein Fahrtenbuch." „Bitte nur die Folgen für die Lohnabrechnung."
 
-`[OLIVER-INPUT: Falls ein eigener Fall aus der Kanzlei genannt werden soll, an dem sich der Unterschied gezeigt hat — hier ist die Stelle dafür. Ohne freigegebenes Beispiel bleibt der Abschnitt beim Modellfall.]`
+Damit ist der eigentliche Punkt benannt, und er ist kein Komfortargument. Sprechen ist nicht angenehmer als Tippen, es liefert ein besseres Ergebnis. Wie brauchbar eine KI-Antwort ausfällt, hängt vor allem daran, wie viel das Modell vom Fall weiß; was Sie nicht sagen, ersetzt es durch Annahmen, und die klingen genauso souverän wie der Rest. Wer tippt, kürzt — man merkt es nicht einmal. Wer spricht, erzählt, und erzählt dabei die Vorgeschichte, die Ausnahme und das eigentliche Ziel gleich mit.
 
 ## Warum beim Sprechen mehr ankommt
 
-Der erste Grund ist banal und trotzdem entscheidend: Tempo. In einer Untersuchung von Ruan und anderen aus dem Jahr 2016 haben 32 Teilnehmer denselben Text einmal auf der Smartphone-Tastatur getippt und einmal diktiert. Die Spracheingabe war im Englischen [dreimal so schnell wie das Tippen](https://arxiv.org/abs/1608.07323), bei einer um 20,4 Prozent niedrigeren Fehlerquote; auf Mandarin lag der Faktor bei 2,8.
+Der erste Grund ist banal und trotzdem entscheidend: Tempo. Sprechen ist schneller als Tippen, und zwar nicht knapp. In einer Untersuchung von Ruan und anderen aus dem Jahr 2016 haben 32 Teilnehmer denselben Text einmal auf der Smartphone-Tastatur getippt und einmal diktiert. Die Spracheingabe war im Englischen [dreimal so schnell wie das Tippen](https://arxiv.org/abs/1608.07323), bei einer um 20,4 Prozent niedrigeren Fehlerquote; auf Mandarin lag der Faktor bei 2,8.
 
 ![Vergleich zweier Eingabewege auf dem Smartphone: Beim Tippen liegt das Tempo im Verhältnis bei 1,0-fach, beim Sprechen bei 3,0-fach; die Fehlerquote ist im Englischen um 20,4 Prozent niedriger und die Eingabe auf Mandarin 2,8-fach schneller, gemessen an 32 Teilnehmern.](schaubild-tippen-sprechen-tempo.webp)
 
 *Der Faktor drei ist nicht der Punkt. Der Punkt ist, was Sie in derselben Minute alles unterbringen, statt es aus Bequemlichkeit wegzulassen.*
 
-Die Studie misst Texteingabe, nicht Beratungsqualität, und sie ist an kurzen Sätzen auf einem Smartphone entstanden. Übertragen Sie den Faktor nicht auf jedes Diktat am Schreibtisch. Was sie belegt, ist die Richtung: Der Weg über die Stimme ist breiter, und breitere Wege werden voller.
+Die Studie misst Texteingabe, nicht Beratungsqualität, und sie ist an kurzen Sätzen auf einem Smartphone entstanden; übertragen Sie den Faktor nicht ungeprüft auf jedes Diktat am Schreibtisch. An der Richtung ändert das nichts, und die Richtung ist hier das Entscheidende: Das Tempo bestimmt, wie viel Sie überhaupt sagen. Wer in derselben Minute das Dreifache unterbringt, lässt die Vorgeschichte nicht weg, nur weil sie zu mühsam zu tippen wäre. Deshalb ist der Tempovorteil kein Nebeneffekt — er ist der Grund, warum die gesprochene Eingabe mehr Kontext enthält.
 
 Dazu kommen drei Effekte, die sich schlecht messen, aber täglich zeigen. Beim Sprechen sinkt die Hemmschwelle bei Fragen, die noch nicht fertig gedacht sind — man muss keinen Text komponieren, sondern nur anfangen. Der Gedankengang bleibt erhalten: Hypothese, Einschränkung, Beispiel, Kurskorrektur, so wie man tatsächlich arbeitet und nicht wie eine einmal abgeschickte Anweisung. Und die Nachschärfung im Dialog kostet Sekunden statt eines neuen Anlaufs.
 
