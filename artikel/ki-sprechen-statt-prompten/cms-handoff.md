@@ -87,8 +87,12 @@ dann im Abschnitt „Was in der Kanzlei zusätzlich gilt“ ergänzen.
 | dreimal so schnell wie das Tippen | `https://arxiv.org/abs/1608.07323` |
 | FAQ-Katalog zum KI-Einsatz im Berufsstand | `https://www.bstbk.de/downloads/bstbk/digitalisierung/BStBK_FAQ-KI_end.pdf` |
 | KI-Verordnung (EU) 2024/1689 | `https://eur-lex.europa.eu/eli/reg/2024/1689/oj` |
+| Hinweisen zu Reasoning-Modellen | `https://platform.openai.com/docs/guides/reasoning-best-practices` |
+| erst allgemein zu formulieren | `https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/extended-thinking-tips` |
 
-Alle drei vor der Veröffentlichung einmal anklicken — siehe Freigabeprotokoll.
+Alle fünf vor der Veröffentlichung einmal anklicken — siehe Freigabeprotokoll.
+Herstellerdokumentation ändert sich ohne Ankündigung; die beiden letzten Links
+gehören bei jeder Aktualisierung des Beitrags erneut auf den Prüfstand.
 
 ## Vertikaler Rhythmus
 

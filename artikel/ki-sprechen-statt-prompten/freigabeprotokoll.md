@@ -4,7 +4,7 @@
 **Bearbeitet am:** 19.08.2026
 **Artikeltyp:** A (Standpunkt) mit erklärendem Mittelteil
 **Suchintention:** „Muss ich noch Prompts schreiben / lohnt sich Spracheingabe bei KI“ — eine Frage, kein Themenmix
-**Länge:** 1.448 Wörter Haupttext, 338 Wörter FAQ
+**Länge:** 1.459 Wörter Haupttext, 338 Wörter FAQ
 **Rechtsstand:** 19.08.2026. Zeitabhängig sind nur zwei Aussagen: der BStBK-FAQ-Katalog (Stand 27.01.2026) und Art. 4 KI-VO (anwendbar seit 02.02.2025).
 
 ## Quellen
@@ -16,7 +16,8 @@
 | Berufsverschwiegenheit folgt aus § 203 StGB, StBerG, BOStB | wie vor | Abschnitt 5.1 | 19.08.2026 | belegt über Suchtreffer |
 | Betreiber von KI-Systemen müssen ausreichende KI-Kompetenz ihrer Mitarbeiter sicherstellen; kein vorgeschriebenes Curriculum | Art. 4 Verordnung (EU) 2024/1689 (KI-VO) | Art. 4; Anwendbarkeit über Art. 113 | 19.08.2026 | belegt, **EUR-Lex-Link nicht geöffnet** |
 | Anwendbar seit 02.02.2025 | wie vor | Art. 113 lit. a (Kapitel I und II) | 19.08.2026 | belegt |
-| Anbieter raten davon ab, den Denkweg vorzuschreiben | Anbieter-Dokumentation zum Prompting von Reasoning-Modellen | — | — | **offen — im Text als `[PRÜFEN]` markiert** |
+| „Denke Schritt für Schritt“ ist bei Reasoning-Modellen überflüssig, weil sie intern so arbeiten; knappe, direkte Anweisungen sind besser | OpenAI, „Reasoning best practices“, Plattform-Dokumentation | Abschnitt „Avoid chain-of-thought prompts“ | 19.08.2026 | belegt über Suchtreffer, **Seite nicht geöffnet** |
+| Für Claude erst allgemein formulieren statt den Denkweg kleinteilig vorzuschreiben | Anthropic, „Extended thinking tips“, Claude-Dokumentation | Abschnitt zu allgemeinen gegenüber vorgeschriebenen Anweisungen | 19.08.2026 | belegt über Suchtreffer, **Seite nicht geöffnet** |
 | Kernthese, Metapher „Prompt-Theater“, Praxisbeispiel Zahnarzt-GmbH, Arbeitsteilung in vier Schritten | Briefing-Dokument des Nutzers vom 19.08.2026 | Abschnitte „Kernthese“, „Sieben Gründe“, „Praxisbeispiel“, „Empfohlene Arbeitsteilung“ | 19.08.2026 | freigegeben |
 | Kanzl.AI als Leistungsseite | `burchardt-kollegen.de/leistungen/kanzl-ai/` | — | 19.08.2026 | über Suchtreffer bestätigt, **Seite nicht geöffnet** |
 
@@ -27,10 +28,10 @@ Abrufe wurden vom Egress-Proxy blockiert. Sämtliche Quellen sind deshalb über
 Suchergebnisse verifiziert, aber **keine Primärquelle wurde geöffnet**. Vor der
 Veröffentlichung sind daher zu prüfen:
 
-1. die drei externen Links (arXiv, BStBK-PDF, EUR-Lex) auf Erreichbarkeit;
+1. die fünf externen Links (arXiv, BStBK-PDF, EUR-Lex, OpenAI-Doku, Anthropic-Doku) auf Erreichbarkeit;
 2. die Zahlen 3,0 / 2,8 / 20,4 % / 63,4 % / 32 Teilnehmer gegen das Abstract;
 3. die BStBK-Formulierung zur Auftragsverarbeitung gegen den PDF-Wortlaut;
-4. der `[PRÜFEN]`-Marker im Abschnitt „Woher die Zauberformeln kommen“.
+4. die beiden Herstellerhinweise gegen den aktuellen Seitenstand — Produktdokumentation wird ohne Versionierung überschrieben.
 
 ## Auszählung für Schaubild 2 (`schaubild-schablone-sachverhalt`)
 
@@ -109,20 +110,19 @@ Text deutlich tragen würde, steht ein `[OLIVER-INPUT]`-Marker.
 
 | Nr. | Punkt | Art |
 |---|---|---|
-| 1 | `[PRÜFEN]` Anbieter-Dokumentation zum Prompting von Reasoning-Modellen — Wortlaut und URL | Sperre |
-| 2 | `[OLIVER-INPUT]` eigener Fall im Abschnitt „Derselbe Fall, zwei Eingaben“ (optional, aber Marker muss vor Veröffentlichung raus) | Sperre |
-| 3 | Primärquellen nicht geöffnet, drei externe Links ungeklickt | Sperre |
-| 4 | Bestehender Homepage-Artikel nicht abgeglichen; Slug- und Weiterleitungsentscheidung offen | Sperre |
-| 5 | Beitragsbild nicht ausgewählt, Alt-Text daher vorläufig | Warnung |
-| 6 | `XXX`-Platzhalter im Schema-Markup (Datumsangaben, Autoren-URL, Logo, Beitragsbild) | Warnung |
-| 7 | Autorenseite für `author.url` nicht bestätigt | Warnung |
+| 1 | `[OLIVER-INPUT]` eigener Fall im Abschnitt „Derselbe Fall, zwei Eingaben“ (optional, aber Marker muss vor Veröffentlichung raus) | Sperre |
+| 2 | Primärquellen nicht geöffnet, fünf externe Links ungeklickt | Sperre |
+| 3 | Bestehender Homepage-Artikel nicht abgeglichen; Slug- und Weiterleitungsentscheidung offen | Sperre |
+| 4 | Beitragsbild nicht ausgewählt, Alt-Text daher vorläufig | Warnung |
+| 5 | `XXX`-Platzhalter im Schema-Markup (Datumsangaben, Autoren-URL, Logo, Beitragsbild) | Warnung |
+| 6 | Autorenseite für `author.url` nicht bestätigt | Warnung |
 
 ## Warnungen aus der Redaktionsprüfung
 
 - Abschnitt „Wo der geschriebene Prompt bleibt“ ist eine Liste mit fünf Punkten.
   Sie ist inhaltlich gerechtfertigt (fünf trennscharfe Fälle), erhöht aber den
   Listenanteil des Artikels. Zusammen mit der Vierer-Aufzählung in „Wie ich die
-  Arbeit aufteilen würde“ sind das zwei Listen auf 1.448 Wörter — vertretbar,
+  Arbeit aufteilen würde“ sind das zwei Listen auf 1.459 Wörter — vertretbar,
   aber die Grenze.
 - Der Einstieg beginnt mit einer Szene, nicht mit einer These. Das weicht bewusst
   vom Muster des Referenzartikels ab, der mit der Gegenposition einsteigt.
@@ -133,6 +133,8 @@ Text deutlich tragen würde, steht ein `[OLIVER-INPUT]`-Marker.
 
 ## Status
 
-**Nicht freigabefähig.** Offen sind die Punkte 1 bis 4. Der Text ist inhaltlich
-fertig; es fehlen die Quellenkontrolle am geöffneten Original, die Entscheidung
-über den `[OLIVER-INPUT]`-Marker und der Abgleich mit dem bestehenden Artikel.
+**Nicht freigabefähig.** Offen sind die Punkte 1 bis 3. Der `[PRÜFEN]`-Marker zur
+Herstellerdokumentation ist am 19.08.2026 durch zwei benannte Quellen ersetzt
+worden und damit erledigt. Es fehlen die Quellenkontrolle am geöffneten Original,
+die Entscheidung über den `[OLIVER-INPUT]`-Marker und der Abgleich mit dem
+bestehenden Artikel.
