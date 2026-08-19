@@ -1,0 +1,453 @@
+<title>Sprechen statt prompten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,400;0,600;0,700;1,400&family=Petrona:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    --ground:      #FFFFFF;
+    --surface:     #F6F8FB;
+    --surface-alt: #FDF3E0;
+    --ink:         #23293A;
+    --ink-soft:    #5A6070;
+    --rule:        #D8DEE9;
+    --rule-soft:   #E8EDF4;
+    --blue:        #3A5791;
+    --blue-deep:   #2C4372;
+    --gold:        #F7B234;
+    --gold-line:   #E0A02A;
+    --flag-bg:     #FDF3E0;
+    --flag-ink:    #6B4E11;
+    --flag-line:   #F7B234;
+
+    --measure: 34rem;
+    --step-0: 1.0625rem;
+    --step-1: 1.1875rem;
+    --step-2: 1.5rem;
+    --step-3: 1.9rem;
+    --step-4: 2.6rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #14181F;
+      --surface:     #1C222D;
+      --surface-alt: #241F14;
+      --ink:         #E4E9F1;
+      --ink-soft:    #9AA3B5;
+      --rule:        #2E3646;
+      --rule-soft:   #232A36;
+      --blue:        #9DB6E2;
+      --blue-deep:   #B8CBEC;
+      --gold:        #F7B234;
+      --gold-line:   #8A6418;
+      --flag-bg:     #241F14;
+      --flag-ink:    #EBC98A;
+      --flag-line:   #8A6418;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #14181F;
+    --surface:     #1C222D;
+    --surface-alt: #241F14;
+    --ink:         #E4E9F1;
+    --ink-soft:    #9AA3B5;
+    --rule:        #2E3646;
+    --rule-soft:   #232A36;
+    --blue:        #9DB6E2;
+    --blue-deep:   #B8CBEC;
+    --gold:        #F7B234;
+    --gold-line:   #8A6418;
+    --flag-bg:     #241F14;
+    --flag-ink:    #EBC98A;
+    --flag-line:   #8A6418;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: Petrona, Georgia, "Times New Roman", serif;
+    font-size: var(--step-1);
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 1.25rem 6rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: var(--measure);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.45em;
+  }
+
+  /* ---------- Kopf ---------- */
+
+  .kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 4.5rem 0 0;
+  }
+
+  .marke {
+    font-family: Aleo, Georgia, serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .marke::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background: var(--gold);
+    max-width: 3.5rem;
+  }
+
+  h1 {
+    font-family: Aleo, Georgia, serif;
+    font-size: var(--step-4);
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .stand {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.85rem;
+    margin: 0.5rem 0 0;
+  }
+
+  /* ---------- Fließtext ---------- */
+
+  p { margin: 0; }
+
+  .lead {
+    font-size: var(--step-2);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  h2 {
+    font-family: Aleo, Georgia, serif;
+    font-size: var(--step-3);
+    font-weight: 600;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin: 1.9em 0 -0.35em;
+    color: var(--blue);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--gold-line);
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 2px;
+  }
+
+  a:hover, a:focus-visible { text-decoration-color: var(--blue); }
+  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 2px; }
+
+  strong { font-weight: 600; }
+
+  blockquote {
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border-left: 3px solid var(--rule);
+    font-size: var(--step-0);
+    line-height: 1.55;
+  }
+
+  blockquote.gesprochen { border-left-color: var(--gold); background: var(--surface-alt); }
+
+  ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 0.6em; }
+  li { padding-left: 0.2em; }
+  li::marker { color: var(--blue); font-weight: 600; }
+
+  /* ---------- Schaubilder ---------- */
+
+  figure {
+    margin: 1.2em 0 0.4em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    width: 100%;
+  }
+
+  @media (min-width: 52rem) {
+    figure { width: 46rem; margin-inline: calc((34rem - 46rem) / 2); }
+  }
+
+  figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: #FFFFFF;
+  }
+
+  figcaption {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ---------- Marker ---------- */
+
+  .marker {
+    background: var(--flag-bg);
+    border: 1px solid var(--flag-line);
+    border-radius: 3px;
+    padding: 0.85rem 1rem;
+    font-family: Aleo, Georgia, serif;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--flag-ink);
+  }
+
+  .marker b {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ---------- FAQ ---------- */
+
+  .faq { display: flex; flex-direction: column; gap: 0; margin-top: 0.5em; }
+
+  .faq details {
+    border-bottom: 1px solid var(--rule);
+    padding: 1.05rem 0;
+  }
+
+  .faq details:first-of-type { border-top: 1px solid var(--rule); }
+
+  .faq summary {
+    font-family: Aleo, Georgia, serif;
+    font-weight: 600;
+    font-size: 1.08rem;
+    line-height: 1.35;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    color: var(--ink);
+  }
+
+  .faq summary::-webkit-details-marker { display: none; }
+
+  .faq summary::before {
+    content: "+";
+    color: var(--blue);
+    font-weight: 700;
+    width: 0.9em;
+    flex: none;
+  }
+
+  .faq details[open] summary::before { content: "–"; }
+  .faq summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  .faq details p { margin-top: 0.7rem; padding-left: 1.65rem; font-size: var(--step-0); }
+
+  /* ---------- Interner Abschluss ---------- */
+
+  .intern {
+    margin-top: 3.5rem;
+    border-top: 3px solid var(--blue);
+    padding-top: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .intern h2 { margin: 0; font-size: var(--step-2); }
+  .intern p, .intern li { font-size: 0.95rem; line-height: 1.55; }
+
+  .intern .hinweis {
+    font-family: Aleo, Georgia, serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .status {
+    display: inline-block;
+    align-self: flex-start;
+    background: var(--blue);
+    color: var(--ground);
+    font-family: Aleo, Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.8rem;
+    border-radius: 3px;
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="kopf">
+    <p class="marke">Burchardt &amp; Kollegen · Beitragsvorschau</p>
+    <h1>Mit der KI sprechen statt prompten: Warum Erklären besser funktioniert als Formulieren</h1>
+    <p class="stand">Überarbeitete Fassung vom 19.08.2026 · 1.448 Wörter Haupttext · 5 FAQ mit FAQPage-Markup · Status: nicht freigabefähig</p>
+  </header>
+
+  <p class="lead">Es gibt kaum eine Kanzlei-Fortbildung zu künstlicher Intelligenz, in der nicht irgendwann die Sammlung der guten Prompts auftaucht. „Du bist ein erfahrener Steuerberater.“ „Gehe Schritt für Schritt vor.“ „Antworte in exakt fünf Abschnitten.“ „Wenn du das verstanden hast, antworte nur mit OK.“ Wer diese Zeilen kennt, hat auch die Tabellen gesehen, in denen sie gesammelt und gepflegt werden, als handle es sich um Formulierungsmuster für Einspruchsschreiben.</p>
+
+  <p>Ich halte diesen Aufwand für die tägliche Arbeit inzwischen für verschwendet. Nicht, weil die Formeln nie funktioniert hätten — sie waren der Behelf, mit dem man schwächeren Modellen etwas abgerungen hat. Sondern weil sie ein Problem lösen, das es in dieser Form nicht mehr gibt, und dabei genau das verdrängen, worauf es ankommt: den Sachverhalt.</p>
+
+  <p>Die interessantere Frage lautet nicht mehr „Wie schreibe ich den perfekten Prompt?“, sondern „Wie erkläre ich der KI mein Problem so, wie ich es einem kompetenten Kollegen erklären würde?“ Und für diese Aufgabe ist die Tastatur selten das beste Werkzeug.</p>
+
+  <h2>Woher die Zauberformeln kommen</h2>
+
+  <p>Frühe Sprachmodelle reagierten auf knappe, mehrdeutige Eingaben unzuverlässig. Wer nur „Wie ist das mit dem Firmenwagen?“ tippte, bekam eine beliebige Allgemeinplatzsammlung. Also hat man gelernt, die Modelle zu führen: eine Rolle zuweisen, ein Ausgabeformat vorschreiben, das Denken in Schritte zerlegen. Das war kein Aberglaube, das war ein Workaround, und er hat gewirkt.</p>
+
+  <p>Aus dem Workaround ist ein Ritual geworden. Es gibt Kurse, Vorlagenmärkte und Kanzleihandbücher für Formulierungen, deren Zweck darin besteht, eine technische Schwäche auszugleichen, die bei den aktuellen Modellen weitgehend behoben ist. Die Anbieter selbst raten inzwischen davon ab, den Denkweg vorzuschreiben: Modelle, die intern ohnehin in Schritten arbeiten, werden durch die Anweisung „denke Schritt für Schritt“ nicht besser, unter Umständen sogar schlechter.</p>
+
+  <div class="marker"><b>Prüfen</b>Wortlaut und aktuelle URL der Anbieter-Dokumentation zum Prompting von Reasoning-Modellen ergänzen — in dieser Umgebung war kein Zugriff auf die Originalseite möglich.</div>
+
+  <p>Was bleibt, ist eine Beschäftigung mit der Verpackung. Der Nutzer feilt an der Anrede des Modells, während die Information fehlt, die das Modell nicht erraten kann.</p>
+
+  <h2>Derselbe Fall, zwei Eingaben</h2>
+
+  <p>Ein Beispiel aus der Beratungspraxis, bewusst ein alltäglicher Fall: Eine Zahnarzt-GmbH überlässt ihrem Gesellschafter-Geschäftsführer ein Fahrzeug, das auch privat gefahren wird.</p>
+
+  <p>So sieht die getippte Schablone aus:</p>
+
+  <blockquote>„Du bist Steuerexperte. Analysiere folgenden Fall nach deutschem Steuerrecht. Berücksichtige alle relevanten Aspekte. Erstelle eine Gliederung. Nenne Risiken.“</blockquote>
+
+  <p>Und so die gesprochene Erklärung, in einem Zug diktiert:</p>
+
+  <blockquote class="gesprochen">„Ich habe eine Zahnarzt-GmbH, die ein Fahrzeug auch privat nutzen lässt. Ich will zunächst keine fertige Stellungnahme, sondern eine strukturierte Liste der steuerlichen Themen, die ich prüfen muss: Umsatzsteuer, Lohnsteuer, verdeckte Gewinnausschüttung und Dokumentation. Bitte denke aus Sicht einer deutschen Steuerkanzlei, nenne Unsicherheiten klar und stelle mir die drei wichtigsten Rückfragen zuerst.“</blockquote>
+
+  <p>Zählen Sie beide Texte einmal aus, dann wird der Unterschied unangenehm deutlich.</p>
+
+  <figure>
+    <img src="SCHAUBILD_2" alt="Gegenüberstellung zweier Eingaben zum selben Fall: Die getippte Schablone enthält drei Vorgaben zu Rolle und Form, eine Angabe zu Ziel und Abgrenzung und keine Angabe zum Sachverhalt. Die gesprochene Erklärung enthält keine Rollenvorgabe, fünf Angaben zu Ziel und Abgrenzung, drei erbetene Rückfragen und drei Angaben zum Sachverhalt.">
+    <figcaption>Die Schablone beschreibt, wie geantwortet werden soll. Über den Fall selbst sagt sie nichts — und genau das kann kein Modell ergänzen.</figcaption>
+  </figure>
+
+  <p>Die zweite Eingabe ist nicht länger, weil jemand mehr Mühe investiert hätte. Sie ist länger, weil beim Sprechen automatisch mitkommt, was man beim Tippen weglässt: die Rechtsform, die tatsächliche Nutzung, das Ziel der Anfrage, die Grenze des Auftrags. Und sie erlaubt sofortige Korrektur, sobald die erste Rückfrage kommt: „Der Gesellschafter ist zugleich Geschäftsführer.“ „Es gibt ein Fahrtenbuch.“ „Bitte nur die Folgen für die Lohnabrechnung.“</p>
+
+  <div class="marker"><b>Oliver-Input</b>Falls ein eigener Fall aus der Kanzlei genannt werden soll, an dem sich der Unterschied gezeigt hat — hier ist die Stelle dafür. Ohne freigegebenes Beispiel bleibt der Abschnitt beim Modellfall.</div>
+
+  <h2>Warum beim Sprechen mehr ankommt</h2>
+
+  <p>Der erste Grund ist banal und trotzdem entscheidend: Tempo. In einer Untersuchung von Ruan und anderen aus dem Jahr 2016 haben 32 Teilnehmer denselben Text einmal auf der Smartphone-Tastatur getippt und einmal diktiert. Die Spracheingabe war im Englischen <a href="https://arxiv.org/abs/1608.07323">dreimal so schnell wie das Tippen</a>, bei einer um 20,4 Prozent niedrigeren Fehlerquote; auf Mandarin lag der Faktor bei 2,8.</p>
+
+  <figure>
+    <img src="SCHAUBILD_1" alt="Vergleich zweier Eingabewege auf dem Smartphone: Beim Tippen liegt das Tempo im Verhältnis bei 1,0-fach, beim Sprechen bei 3,0-fach; die Fehlerquote ist im Englischen um 20,4 Prozent niedriger und die Eingabe auf Mandarin 2,8-fach schneller, gemessen an 32 Teilnehmern.">
+    <figcaption>Der Faktor drei ist nicht der Punkt. Der Punkt ist, was Sie in derselben Minute alles unterbringen, statt es aus Bequemlichkeit wegzulassen.</figcaption>
+  </figure>
+
+  <p>Die Studie misst Texteingabe, nicht Beratungsqualität, und sie ist an kurzen Sätzen auf einem Smartphone entstanden. Übertragen Sie den Faktor nicht auf jedes Diktat am Schreibtisch. Was sie belegt, ist die Richtung: Der Weg über die Stimme ist breiter, und breitere Wege werden voller.</p>
+
+  <p>Dazu kommen drei Effekte, die sich schlecht messen, aber täglich zeigen. Beim Sprechen sinkt die Hemmschwelle bei Fragen, die noch nicht fertig gedacht sind — man muss keinen Text komponieren, sondern nur anfangen. Der Gedankengang bleibt erhalten: Hypothese, Einschränkung, Beispiel, Kurskorrektur, so wie man tatsächlich arbeitet und nicht wie eine einmal abgeschickte Anweisung. Und die Nachschärfung im Dialog kostet Sekunden statt eines neuen Anlaufs.</p>
+
+  <p>Nicht zuletzt ist der Weg über die Stimme barriereärmer. Wer nicht schnell tippt oder ohnehin den halben Tag am Bildschirm sitzt, gewinnt dabei mehr als nur Zeit; unterwegs, zwischen zwei Terminen oder während der Aktendurchsicht ist er oft der einzige praktikable.</p>
+
+  <h2>Wo der geschriebene Prompt bleibt</h2>
+
+  <p>Sprache ersetzt kein klares Denken. Sie ersetzt die künstliche Prompt-Literatur — nicht den schriftlichen Auftrag, wenn es auf dessen Wortlaut ankommt.</p>
+
+  <p>Schreiben Sie, wenn eines dieser Merkmale zutrifft:</p>
+
+  <ul>
+    <li><strong>Das Ergebnis muss reproduzierbar sein.</strong> Zwei gesprochene Erklärungen desselben Sachverhalts sind nie identisch; zwei identische Textbausteine schon.</li>
+    <li><strong>Es geht um Struktur statt Fließtext</strong>, also um Tabellen, Vorlagen, JSON oder Code. Dort ist die Anweisung selbst das Format.</li>
+    <li><strong>Der Wortlaut wird später geprüft.</strong> Eine steuerlich oder rechtlich relevante Formulierung, die in ein Mandantenschreiben wandert, muss man gegenlesen können — auch die Frage, aus der sie entstanden ist.</li>
+    <li><strong>Der Ablauf wiederholt sich.</strong> Was zwanzigmal im Monat gleich läuft, gehört in einen festen Prompt und nicht jedes Mal neu ins Mikrofon.</li>
+    <li><strong>Vor der Eingabe ist eine bewusste Prüfung nötig</strong>, weil Mandantendaten betroffen sind. Getippter Text lässt sich vor dem Absenden noch einmal lesen. Gesprochenes ist schon draußen.</li>
+  </ul>
+
+  <p>Der letzte Punkt ist der wichtigste, und er führt zum eigentlichen Kanzleithema.</p>
+
+  <h2>Was in der Kanzlei zusätzlich gilt</h2>
+
+  <p>Spracheingabe beschleunigt die Erfassung, nicht die Zulässigkeit. An der Verschwiegenheitspflicht ändert das Mikrofon nichts: Wer Mandantendaten in ein KI-System gibt, bezieht einen Dritten in ein Mandatsverhältnis ein, und das ist berufsrechtlich und datenschutzrechtlich zu unterlegen. Die Bundessteuerberaterkammer hat dazu einen <a href="https://www.bstbk.de/downloads/bstbk/digitalisierung/BStBK_FAQ-KI_end.pdf">FAQ-Katalog zum KI-Einsatz im Berufsstand</a> veröffentlicht, der die Linie zusammenfasst: Vertrauliche Daten dürfen an einen KI-Dienstleister nur, wenn dieser vertraglich strikt zur Verschwiegenheit verpflichtet ist, die datenschutzrechtliche Prüfung dokumentiert vorliegt und ein Auftragsverarbeitungsvertrag geschlossen ist.</p>
+
+  <p>Beim Diktieren verschärft sich das Problem, weil man beiläufig mehr sagt. Genau die Details, die die Antwort besser machen — Ort, Branche, Betriebsgröße, Familienverhältnisse —, machen einen Mandanten bestimmbar, auch ohne dass sein Name fällt. Der Vorteil der Methode ist zugleich ihr Risiko.</p>
+
+  <p>Dazu kommt eine Pflicht, die viele Kanzleien noch nicht auf dem Schirm haben: Nach Art. 4 der <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj">KI-Verordnung (EU) 2024/1689</a> müssen Betreiber von KI-Systemen dafür sorgen, dass ihre Mitarbeiter über ausreichende KI-Kompetenz verfügen. Diese Vorschrift gilt seit dem 2. Februar 2025 und trifft auch die Kanzlei, die „nur“ ein Standardmodell nutzt. Ein Zertifikat verlangt sie nicht, wohl aber ein dokumentiertes, zum Risiko passendes Vorgehen.</p>
+
+  <h2>Wie ich die Arbeit aufteilen würde</h2>
+
+  <p>Aus beidem ergibt sich eine Reihenfolge, die ich für tragfähig halte:</p>
+
+  <ol>
+    <li><strong>Sprechen</strong>, um Sachverhalt, Ziel und Abgrenzung schnell und vollständig zu erfassen.</li>
+    <li><strong>Dialogisch weiterarbeiten</strong> und die Rückfragen des Modells zulassen, statt die erste Antwort zu bewerten.</li>
+    <li><strong>Schriftlich prüfen und festhalten</strong>, sobald das Ergebnis fachlich, rechtlich oder für die Akte relevant wird.</li>
+    <li><strong>Feste Prompts nur dort</strong>, wo ein Ablauf wiederkehrt und zuverlässig automatisiert werden soll.</li>
+  </ol>
+
+  <p>Welcher Schritt in welcher Umgebung stattfinden darf, entscheidet die Datenlage, nicht die Bequemlichkeit. Wie wir das in unserer Kanzlei aufsetzen, beschreiben wir unter <a href="https://www.burchardt-kollegen.de/leistungen/kanzl-ai/">Kanzl.AI</a>.</p>
+
+  <h2>Was daraus folgt</h2>
+
+  <p>Die neue Kompetenz ist nicht die perfekte Formel. Sie besteht darin, einer Maschine den richtigen Kontext zu geben: Was ist der Fall, was soll herauskommen, was gilt nicht, wo bin ich unsicher. Das ist dieselbe Fähigkeit, die einen guten Aktenvermerk von einem schlechten unterscheidet, und sie war noch nie an eine Tastatur gebunden.</p>
+
+  <p>Die Stimme ist also nicht das Ende des Promptens. Sie ist das Ende des Prompt-Theaters — und der Anfang eines Gesprächs, für das man vorher wissen muss, was man eigentlich fragen will.</p>
+
+  <h2>Häufige Fragen</h2>
+
+  <div class="faq">
+    <details open>
+      <summary>Welche Software brauche ich, um mit einer KI zu sprechen?</summary>
+      <p>In der Regel keine zusätzliche. Die verbreiteten KI-Oberflächen haben ein Mikrofonsymbol im Eingabefeld, Windows und macOS bringen eigene Diktierfunktionen mit, und für längere Diktate gibt es spezialisierte Werkzeuge. Die Auswahl entscheidet sich nicht an der Bedienung, sondern daran, wo die Aufnahme verarbeitet wird, wie lange sie gespeichert bleibt und ob der Anbieter zur Verschwiegenheit verpflichtet werden kann. Diese Prüfung gehört vor die erste Nutzung.</p>
+    </details>
+    <details>
+      <summary>Reicht es, den Namen des Mandanten wegzulassen?</summary>
+      <p>Nein. Ein Sachverhalt kann eine Person auch ohne Namen bestimmbar machen; Ort, Branche, Rechtsform und Betriebsgröße genügen oft, gerade in einer überschaubaren Region. Beim Diktieren rutschen solche Angaben besonders leicht mit hinein, weil man erzählt statt formuliert. Tragfähig ist deshalb nur eine Umgebung, in der die Eingabe berufs- und datenschutzrechtlich abgesichert ist. Das Weglassen des Namens ersetzt sie nicht.</p>
+    </details>
+    <details>
+      <summary>Wie lang sollte eine gesprochene Erklärung sein?</summary>
+      <p>So lang, bis Sachverhalt, Ziel und Abgrenzung gesagt sind — meist eine bis drei Minuten. Kürzer wird es selten vollständig, länger beginnt man meist, Antworten vorwegzunehmen, die man besser dem Modell überlässt. Ein brauchbarer Selbsttest: Könnte ein Kollege, der den Fall nicht kennt, nach dieser Erklärung sinnvoll nachfragen? Dann reicht sie auch für die KI.</p>
+    </details>
+    <details>
+      <summary>Was mache ich, wenn die Spracherkennung Fachbegriffe falsch schreibt?</summary>
+      <p>Weitersprechen und im nächsten Satz korrigieren. Ein verunglücktes Wort im Fließtext ist kein Grund, die Eingabe neu zu beginnen, weil sich der gemeinte Begriff meist aus dem Zusammenhang ergibt. Anders liegt es bei Zahlen, Namen, Daten und Aktenzeichen: Die tippen Sie besser selbst oder lesen sie vor dem Absenden gegen, weil ein Zahlendreher hier keine Nachfrage auslöst, sondern eine falsche Antwort.</p>
+    </details>
+    <details>
+      <summary>Lohnt sich eine Prompt-Schulung im Team dann überhaupt noch?</summary>
+      <p>Für die tägliche Arbeit kaum, für wiederkehrende Abläufe schon. Wer Mitarbeitern Formelsammlungen beibringt, trainiert eine Fertigkeit, die mit jeder Modellgeneration weniger trägt. Sinnvoll bleibt die Schulung dort, wo feste Prompts in einen Prozess eingebaut werden, und vor allem dort, wo es um Datenschutz, Verschwiegenheit und die Bewertung von Antworten geht — das ist ohnehin der Teil, den Art. 4 der KI-Verordnung von jeder Kanzlei verlangt.</p>
+    </details>
+  </div>
+
+  <section class="intern">
+    <p class="hinweis">Nicht Teil des Beitrags — interner Zwischenstand</p>
+    <h2>Vor der Freigabe zu klären</h2>
+    <ol>
+      <li>Der <strong>bestehende Homepage-Artikel</strong> konnte in dieser Sitzung nicht geöffnet werden; der Netzzugriff auf burchardt-kollegen.de ist gesperrt. Vor der Übernahme abgleichen, welche Passagen bleiben und ob die bestehende URL weitergenutzt wird.</li>
+      <li>Die drei <strong>externen Quellen</strong> (arXiv, BStBK-PDF, EUR-Lex) sind über Suchergebnisse belegt, aber nicht am Original geprüft. Einmal anklicken und die Zahlen 3,0 / 2,8 / 20,4 % gegen das Abstract halten.</li>
+      <li>Der <strong>Prüfen-Marker</strong> zur Anbieter-Dokumentation muss aufgelöst oder der Satz gestrichen werden.</li>
+      <li>Der <strong>Oliver-Input-Marker</strong> ist optional zu füllen, muss vor der Veröffentlichung aber verschwinden.</li>
+      <li>Im <strong>Schema-Markup</strong> stehen fünf Platzhalter: Erstveröffentlichungs- und Änderungsdatum, Autorenseite, Logo, Beitragsbild.</li>
+    </ol>
+    <p class="status">Status: nicht freigabefähig</p>
+  </section>
+
+</div>

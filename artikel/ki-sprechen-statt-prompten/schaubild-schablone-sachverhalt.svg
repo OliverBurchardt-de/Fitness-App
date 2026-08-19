@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" role="img"
+     aria-labelledby="t2 d2" font-family="Georgia, 'Times New Roman', serif">
+  <title id="t2">Was in der Eingabe tatsächlich steht</title>
+  <desc id="d2">Auszaehlung zweier Eingaben zu demselben Fall, dem Firmenwagen einer
+  Zahnarzt-GmbH. Die getippte Schablone enthaelt 3 Vorgaben zu Rolle und Form,
+  1 Angabe zu Ziel und Abgrenzung und 0 Angaben zum Sachverhalt. Die gesprochene
+  Erklaerung enthaelt 0 Vorgaben zu Rolle und Form, 5 Angaben zu Ziel und
+  Abgrenzung und 3 Angaben zum Sachverhalt. Nur die drei Sachverhaltsangaben
+  stammen aus diesem Mandat und koennen von keinem Modell erraten werden.</desc>
+
+  <rect width="880" height="400" fill="#FFFFFF"/>
+
+  <text x="36" y="42" font-size="21" font-weight="bold" fill="#3A5791">Was in der Eingabe tatsächlich steht</text>
+  <text x="36" y="66" font-size="14" fill="#5A6070">Firmenwagen einer Zahnarzt-GmbH, dieselbe Frage, zwei Wege — ausgezählt</text>
+  <rect x="36" y="80" width="64" height="4" rx="2" fill="#F7B234"/>
+
+  <!-- Links: getippte Schablone -->
+  <rect x="36" y="112" width="384" height="230" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <text x="60" y="144" font-size="15" font-weight="bold" fill="#3A5791">Getippte Schablone</text>
+  <text x="60" y="166" font-size="13" fill="#5A6070">„Du bist Steuerexperte. Analysiere den Fall …“</text>
+
+  <text x="60" y="200" font-size="13" fill="#333333">Vorgaben zu Rolle und Form</text>
+  <text x="396" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">3</text>
+  <text x="60" y="224" font-size="13" fill="#333333">Angaben zu Ziel und Abgrenzung</text>
+  <text x="396" y="224" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">1</text>
+  <text x="60" y="248" font-size="13" fill="#333333">Erbetene Rückfragen</text>
+  <text x="396" y="248" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">0</text>
+
+  <line x1="60" y1="266" x2="396" y2="266" stroke="#C9D2E0"/>
+  <text x="60" y="296" font-size="13" fill="#5A6070">Angaben zum Sachverhalt</text>
+  <text x="60" y="326" font-size="28" font-weight="bold" fill="#3A5791">0</text>
+
+  <!-- Rechts: gesprochene Erklärung -->
+  <rect x="460" y="112" width="384" height="230" rx="6" fill="#FDF3E0" stroke="#F7B234" stroke-width="2"/>
+  <text x="484" y="144" font-size="15" font-weight="bold" fill="#3A5791">Gesprochene Erklärung</text>
+  <text x="484" y="166" font-size="13" fill="#5A6070">„Ich habe eine Zahnarzt-GmbH, die ein Fahrzeug …“</text>
+
+  <text x="484" y="200" font-size="13" fill="#333333">Vorgaben zu Rolle und Form</text>
+  <text x="820" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">0</text>
+  <text x="484" y="224" font-size="13" fill="#333333">Angaben zu Ziel und Abgrenzung</text>
+  <text x="820" y="224" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">5</text>
+  <text x="484" y="248" font-size="13" fill="#333333">Erbetene Rückfragen</text>
+  <text x="820" y="248" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">3</text>
+
+  <line x1="484" y1="266" x2="820" y2="266" stroke="#EBC98A"/>
+  <text x="484" y="296" font-size="13" fill="#5A6070">Angaben zum Sachverhalt</text>
+  <text x="484" y="326" font-size="28" font-weight="bold" fill="#3A5791">3</text>
+
+  <text x="36" y="372" font-size="11" fill="#5A6070">Auszählung der Beispieltexte in diesem Artikel. „Aus Sicht einer deutschen Steuerkanzlei“ zählt als Abgrenzung.</text>
+  <text x="36" y="388" font-size="11" fill="#5A6070">Golden hervorgehoben ist die gesprochene Seite: Nur ihre drei Sachverhaltsangaben stammen aus dem Mandat.</text>
+</svg>

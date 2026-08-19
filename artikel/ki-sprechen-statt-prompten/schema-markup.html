@@ -1,0 +1,100 @@
+<!--
+  Schema-Markup für den Beitrag „Mit der KI sprechen statt prompten“.
+
+  Einbau: in den <head> der Beitragsseite.
+  In WordPress/Enfold entweder über das Feld für seitenindividuellen Header-Code
+  oder über den Kopfbereich der Suchmaschinen-Erweiterung (Yoast/Rank Math:
+  „Schema“ bzw. „Code einfügen“ → Kopfbereich).
+
+  Wichtig:
+  1. Die Antworttexte im FAQPage-Objekt müssen wortgleich zum sichtbaren
+     FAQ-Block im Artikel bleiben. Wird im Text geändert, wird hier mitgeändert.
+  2. Nur einbauen, solange der sichtbare FAQ-Block auf der Seite steht.
+  3. Die mit XXX markierten Werte vor der Veröffentlichung ersetzen.
+-->
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://www.burchardt-kollegen.de/mit-ki-sprechen-statt-prompten/#beitrag",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.burchardt-kollegen.de/mit-ki-sprechen-statt-prompten/"
+      },
+      "headline": "Mit der KI sprechen statt prompten: Warum Erklären besser funktioniert als Formulieren",
+      "description": "Die perfekte Prompt-Formel hat ausgedient. Warum gesprochene Erklärungen mehr Kontext liefern und wo der geschriebene Prompt in der Kanzlei bleibt.",
+      "inLanguage": "de-DE",
+      "datePublished": "XXX-DATUM-ERSTVEROEFFENTLICHUNG",
+      "dateModified": "XXX-DATUM-DIESER-UEBERARBEITUNG",
+      "author": {
+        "@type": "Person",
+        "name": "Oliver Burchardt",
+        "url": "XXX-URL-AUTORENSEITE"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Burchardt & Kollegen",
+        "url": "https://www.burchardt-kollegen.de/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "XXX-URL-LOGO"
+        }
+      },
+      "image": "XXX-URL-BEITRAGSBILD",
+      "articleSection": "Digitalisierung"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.burchardt-kollegen.de/mit-ki-sprechen-statt-prompten/#faq",
+      "isPartOf": {
+        "@id": "https://www.burchardt-kollegen.de/mit-ki-sprechen-statt-prompten/"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Welche Software brauche ich, um mit einer KI zu sprechen?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In der Regel keine zusätzliche. Die verbreiteten KI-Oberflächen haben ein Mikrofonsymbol im Eingabefeld, Windows und macOS bringen eigene Diktierfunktionen mit, und für längere Diktate gibt es spezialisierte Werkzeuge. Die Auswahl entscheidet sich nicht an der Bedienung, sondern daran, wo die Aufnahme verarbeitet wird, wie lange sie gespeichert bleibt und ob der Anbieter zur Verschwiegenheit verpflichtet werden kann. Diese Prüfung gehört vor die erste Nutzung."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Reicht es, den Namen des Mandanten wegzulassen?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nein. Ein Sachverhalt kann eine Person auch ohne Namen bestimmbar machen; Ort, Branche, Rechtsform und Betriebsgröße genügen oft, gerade in einer überschaubaren Region. Beim Diktieren rutschen solche Angaben besonders leicht mit hinein, weil man erzählt statt formuliert. Tragfähig ist deshalb nur eine Umgebung, in der die Eingabe berufs- und datenschutzrechtlich abgesichert ist. Das Weglassen des Namens ersetzt sie nicht."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Wie lang sollte eine gesprochene Erklärung sein?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "So lang, bis Sachverhalt, Ziel und Abgrenzung gesagt sind — meist eine bis drei Minuten. Kürzer wird es selten vollständig, länger beginnt man meist, Antworten vorwegzunehmen, die man besser dem Modell überlässt. Ein brauchbarer Selbsttest: Könnte ein Kollege, der den Fall nicht kennt, nach dieser Erklärung sinnvoll nachfragen? Dann reicht sie auch für die KI."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Was mache ich, wenn die Spracherkennung Fachbegriffe falsch schreibt?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Weitersprechen und im nächsten Satz korrigieren. Ein verunglücktes Wort im Fließtext ist kein Grund, die Eingabe neu zu beginnen, weil sich der gemeinte Begriff meist aus dem Zusammenhang ergibt. Anders liegt es bei Zahlen, Namen, Daten und Aktenzeichen: Die tippen Sie besser selbst oder lesen sie vor dem Absenden gegen, weil ein Zahlendreher hier keine Nachfrage auslöst, sondern eine falsche Antwort."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Lohnt sich eine Prompt-Schulung im Team dann überhaupt noch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Für die tägliche Arbeit kaum, für wiederkehrende Abläufe schon. Wer Mitarbeitern Formelsammlungen beibringt, trainiert eine Fertigkeit, die mit jeder Modellgeneration weniger trägt. Sinnvoll bleibt die Schulung dort, wo feste Prompts in einen Prozess eingebaut werden, und vor allem dort, wo es um Datenschutz, Verschwiegenheit und die Bewertung von Antworten geht — das ist ohnehin der Teil, den Art. 4 der KI-Verordnung von jeder Kanzlei verlangt."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>

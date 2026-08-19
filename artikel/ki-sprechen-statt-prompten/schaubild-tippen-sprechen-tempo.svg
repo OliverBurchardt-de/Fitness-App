@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 452" role="img"
+     aria-labelledby="t1 d1" font-family="Georgia, 'Times New Roman', serif">
+  <title id="t1">Tippen und Sprechen im Vergleich</title>
+  <desc id="d1">Gegenueberstellung zweier Eingabewege auf dem Smartphone nach der
+  Studie von Ruan und anderen aus dem Jahr 2016 mit 32 Teilnehmern. Beim Tippen auf
+  der Bildschirmtastatur sind Tempo und Fehlerquote der Referenzwert, das relative
+  Tempo betraegt 1,0-fach. Beim Sprechen mit automatischer Erkennung liegt die
+  Fehlerquote im Englischen 20,4 Prozent niedriger, die Eingabe auf Mandarin ist
+  2,8-fach schneller, das relative Tempo im Englischen betraegt 3,0-fach. In
+  derselben Zeit entsteht damit dreimal so viel Text bei niedrigerer
+  Fehlerquote.</desc>
+
+  <rect width="880" height="452" fill="#FFFFFF"/>
+
+  <text x="36" y="42" font-size="21" font-weight="bold" fill="#3A5791">Tippen und Sprechen im Vergleich</text>
+  <text x="36" y="66" font-size="14" fill="#5A6070">Texteingabe auf dem Smartphone, 32 Teilnehmer, englische und chinesische Sätze</text>
+  <rect x="36" y="80" width="64" height="4" rx="2" fill="#F7B234"/>
+
+  <!-- Links: Tippen -->
+  <rect x="36" y="112" width="384" height="230" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <text x="60" y="144" font-size="15" font-weight="bold" fill="#3A5791">Tippen</text>
+  <text x="60" y="166" font-size="13" fill="#5A6070">Bildschirmtastatur des Smartphones</text>
+
+  <text x="60" y="200" font-size="13" fill="#333333">Fehlerquote Englisch</text>
+  <text x="396" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">Referenzwert</text>
+  <text x="60" y="224" font-size="13" fill="#333333">Eingabe auf Mandarin</text>
+  <text x="396" y="224" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">Referenzwert</text>
+  <text x="60" y="248" font-size="13" fill="#333333">Teilnehmer im Test</text>
+  <text x="396" y="248" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">32 Personen</text>
+
+  <line x1="60" y1="266" x2="396" y2="266" stroke="#C9D2E0"/>
+  <text x="60" y="296" font-size="13" fill="#5A6070">Tempo im Verhältnis</text>
+  <text x="60" y="326" font-size="28" font-weight="bold" fill="#3A5791">1,0-fach</text>
+
+  <!-- Rechts: Sprechen -->
+  <rect x="460" y="112" width="384" height="230" rx="6" fill="#FDF3E0" stroke="#F7B234" stroke-width="2"/>
+  <text x="484" y="144" font-size="15" font-weight="bold" fill="#3A5791">Sprechen</text>
+  <text x="484" y="166" font-size="13" fill="#5A6070">Diktat mit automatischer Erkennung</text>
+
+  <text x="484" y="200" font-size="13" fill="#333333">Fehlerquote Englisch</text>
+  <text x="820" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">20,4 % niedriger</text>
+  <text x="484" y="224" font-size="13" fill="#333333">Eingabe auf Mandarin</text>
+  <text x="820" y="224" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">2,8-fach schneller</text>
+  <text x="484" y="248" font-size="13" fill="#333333">Teilnehmer im Test</text>
+  <text x="820" y="248" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">32 Personen</text>
+
+  <line x1="484" y1="266" x2="820" y2="266" stroke="#EBC98A"/>
+  <text x="484" y="296" font-size="13" fill="#5A6070">Tempo im Verhältnis</text>
+  <text x="484" y="326" font-size="28" font-weight="bold" fill="#3A5791">3,0-fach</text>
+
+  <!-- Ergebniszeile -->
+  <rect x="36" y="358" width="808" height="42" rx="6" fill="#3A5791"/>
+  <text x="60" y="385" font-size="15" font-weight="bold" fill="#FFFFFF">In derselben Zeit:</text>
+  <text x="236" y="385" font-size="17" font-weight="bold" fill="#F7B234">dreimal so viel Text</text>
+  <text x="452" y="385" font-size="14" fill="#C3D2E8">und weniger Tippfehler, die das Modell erraten muss</text>
+
+  <text x="36" y="422" font-size="11" fill="#5A6070">Ruan u. a. 2016: kurze Sätze, automatische Spracherkennung gegen die iPhone-Tastatur, 32 Teilnehmer.</text>
+  <text x="36" y="438" font-size="11" fill="#5A6070">Die Übertragung auf lange Diktate am Rechner ist eine Annahme, keine Messung.</text>
+</svg>
